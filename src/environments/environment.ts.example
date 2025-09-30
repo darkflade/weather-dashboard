@@ -1,0 +1,6 @@
+// src/environments/environment.template.ts
+export const environment = {
+  production: false,
+  owUrl: 'https://api.openweathermap.org/data/2.5',
+  owKey: 'YOUR_API_KEY_HERE'
+};git

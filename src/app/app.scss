@@ -1,0 +1,95 @@
+// src/app/app.component.scss
+:host {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  background: #2c3e50;
+  color: #ecf0f1;
+  display: block;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.dashboard-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.current-weather-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+}
+
+.main-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.temperature {
+  font-size: 4rem;
+  font-weight: 300;
+}
+
+.forecast-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 1rem;
+}
+
+.day-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.day-card .temp {
+  font-weight: bold;
+}
+
+
+// Стили для светлой темы
+.light {
+  background-color: #f0f2f5;
+  color: #333;
+
+  .current-weather-card, .day-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid #ddd;
+  }
+
+  .search-bar input {
+    background-color: #fff;
+    color: #333;
+  }
+}
+
+// Стили для темной темы (можешь скопировать свои старые стили сюда)
+.dark {
+  background: #2c3e50;
+  color: #ecf0f1;
+
+  .current-weather-card, .day-card {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .search-bar input {
+    background-color: #34495e;
+    color: #ecf0f1;
+  }
+}
+
+body.light-theme {
+  /* стили для светлой темы */
+}
+body.dark-theme {
+  /* стили для темной темы */
+}

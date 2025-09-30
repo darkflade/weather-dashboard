@@ -1,0 +1,45 @@
+<!-- Оверлей для затемнения фона, по клику закрывает drawer -->
+<div class="overlay" [class.open]="isOpen" (click)="closeDrawer.emit()"></div>
+
+<!-- Сам drawer -->
+<div class="drawer" [class.open]="isOpen">
+  <h2>Настройки</h2>
+
+  <div class="setting-group">
+    <label for="theme">Тема</label>
+    <select id="theme" [ngModel]="settings.theme" (ngModelChange)="settingsChange.emit({theme: $event})">
+      <option value="auto">Авто (системная)</option>
+      <option value="light">Светлая</option>
+      <option value="dark">Темная</option>
+    </select>
+  </div>
+
+  <div class="setting-group">
+    <label for="temp">Температура</label>
+    <select id="temp" [ngModel]="settings.tempUnit" (ngModelChange)="settingsChange.emit({tempUnit: $event})">
+      <option value="C">°C</option>
+      <option value="F">°F</option>
+    </select>
+  </div>
+
+  <div class="setting-group">
+    <label for="wind">Ветер</label>
+    <select id="wind" [ngModel]="settings.windUnit" (ngModelChange)="settingsChange.emit({windUnit: $event})">
+      <option value="ms">м/с</option>
+      <option value="kmh">км/ч</option>
+      <option value="mph">миль/ч</option>
+    </select>
+  </div>
+
+  <div class="setting-group">
+    <label for="pressure">Давление</label>
+    <select id="pressure" [ngModel]="settings.pressureUnit" (ngModelChange)="settingsChange.emit({pressureUnit: $event})">
+      <option value="hPa">гПа</option>
+      <option value="mmHg">мм рт.ст.</option>
+    </select>
+  </div>
+
+  <!-- Сюда добавим язык -->
+
+  <button class="close-btn" (click)="closeDrawer.emit()">Закрыть</button>
+</div>

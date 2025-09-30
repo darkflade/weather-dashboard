@@ -1,0 +1,63 @@
+:host {
+  --drawer-width: 300px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+  z-index: 100;
+}
+
+.overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: calc(-1 * var(--drawer-width)); // Спрятан за экраном
+  width: var(--drawer-width);
+  height: 100%;
+
+  // --- Эффект "стекла" ---
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+
+  padding: 20px;
+  box-shadow: -10px 0 20px rgba(0, 0, 0, 0.2);
+  transition: right 0.3s ease-out;
+  z-index: 101;
+  color: white; /* Цвет текста по умолчанию для стекла */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.drawer.open {
+  right: 0;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+select, button {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.2);
+  color: white;
+  font-size: 16px;
+}
