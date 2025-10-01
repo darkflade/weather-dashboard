@@ -1,80 +1,71 @@
-<!-- src/app/app.html -->
-
-<!-- Главный контейнер. Использует async pipe для подписки и "распаковки" данных в переменную `weather` -->
 <div *ngIf="settings$ | async as settings">
   <div class="background-container">
     <!-- Здесь будет фон, меняющийся в зависимости от погоды -->
   </div>
 
-  <div class="dashboard-wrapper" *ngIf="weatherData$ | async as weather">
+  <div class="dashboard-wrapper" *ngIf="weatherData$ | async as weather; else loading">
     <header>
-      <h1>Погодный дашборд</h1>
       <button class="settings-btn" (click)="isSettingsOpen = true">⚙️</button>
+      <h1>Погодный дашборд</h1>
     </header>
-  <!-- Добавлена проверка, чтобы основной контент не рендерился, пока нет данных в списке -->
-  <main *ngIf="weather.list && weather.list.length > 0">
-    <!-- Секция с текущей погодой -->
-    <!-- Мы берем данные из ПЕРВОГО элемента списка прогнозов (weather.list[0]) -->
-    <section class="current-weather-card">
 
-      <!-- ПУТЬ: weather.city.name и weather.city.country -->
-      <h2>{{ weather.city.name }}, {{ weather.city.country }}</h2>
+    <main *ngIf="weather.list && weather.list.length > 0">
+      <section class="current-weather-card">
 
-      <div class="main-info">
-        <!-- ПУТЬ: Собираем URL для иконки из weather.list[0].weather[0].icon -->
-        <img [src]="'https://openweathermap.org/img/wn/' + weather.list[0].weather[0].icon + '@2x.png'" [alt]="weather.list[0].weather[0].description">
-
-        <!-- ПУТЬ: weather.list[0].main.temp -->
-        <span class="temperature">{{ weather.list[0].main.temp | number:'1.0-0' }}°C</span>
-      </div>
-
-      <!-- ПУТЬ: weather.list[0].weather[0].description -->
-      <p class="condition-text">{{ weather.list[0].weather[0].description }}</p>
-
-      <div class="details">
-        <!-- ПУТЬ: weather.list[0].main.humidity -->
-        <div>Влажность: {{ weather.list[0].main.humidity }}%</div>
-        <!-- ПУТЬ: weather.list[0].wind.speed. ЕДИНИЦЫ ИЗМЕНЕНИЯ: м/с -->
-        <div>Ветер: {{ weather.list[0].wind.speed }} м/с</div>
-        <!-- ПУТЬ: weather.list[0].main.pressure -->
-        <div>Давление: {{ weather.list[0].main.pressure }} гПа</div>
-      </div>
-    </section>
-
-    <!-- Секция с прогнозом на несколько дней -->
-    <section class="forecast">
-      <h3>Прогноз на ближайшие 24 часа</h3>
-      <div class="forecast-container">
-        <!-- ПУТЬ: Итерируемся по списку 'weather.list'. Берем первые 8 записей (24 часа) -->
-        <div class="day-card" *ngFor="let item of weather.list | slice:0:8">
-          <!-- ПУТЬ: item.dt_txt. Показываем только время -->
-          <p>{{ item.dt_txt | date:'HH:mm' }}</p>
-          <!-- ПУТЬ: Собираем URL иконки для каждого элемента -->
-          <img [src]="'https://openweathermap.org/img/wn/' + item.weather[0].icon + '.png'" [alt]="item.weather[0].description">
-          <!-- ПУТЬ: item.main.temp. Показываем температуру для этого часа -->
-          <p class="temp">{{ item.main.temp | number:'1.0-0' }}°</p>
+        <h2>{{ weather.city.name }}, {{ weather.city.country }}</h2>
+        <div class="main-info">
+          <img [src]="'https://openweathermap.org/img/wn/' + weather.list[0].weather[0].icon + '@2x.png'" [alt]="weather.list[0].weather[0].description">
+          <span class="temperature" [style.color]="getTempColor(weather.list[0].main.temp)">{{ weather.list[0].main.temp | temperature:settings.tempUnit | number:'1.0-0' }}°{{settings.tempUnit}}</span>
+          <span class="feels-like">Ощущается как {{ weather.list[0].main.feels_like | temperature:settings.tempUnit | number:'1.0-0' }}°{{settings.tempUnit}}</span>
         </div>
-      </div>
-    </section>
-  </main>
-</div>
 
-  <!-- Индикатор загрузки -->
-  <div class="loader" *ngIf="!(weatherData$ | async)">
-    Загрузка данных о погоде...
+        <p class="condition-text">{{ weather.list[0].weather[0].description }}</p>
+
+        <div class="details">
+          <div>Влажность: {{ weather.list[0].main.humidity }}%</div>
+          <div class="wind-details">
+            Ветер:
+            <div class="wind-direction" [style.transform]="'rotate(' + weather.list[0].wind.deg + 'deg)'">↑</div>
+            {{ weather.list[0].wind.speed | wind:settings.windUnit | number:'1.0-1' }} {{ settings.windUnit === 'ms' ? 'м/с' : settings.windUnit === 'kmh' ? 'км/ч' : 'миль/ч' }}
+          </div>
+          <div>
+            Давление:
+            {{ weather.list[0].main.pressure | pressure:settings.pressureUnit | number:'1.0-0' }}
+            {{ settings.pressureUnit === 'hPa' ? 'гПа' : 'мм рт.ст.' }}
+            <span class="pressure-hint" [ngClass]="getPressureHint(weather.list[0].main.pressure).className">
+                {{ getPressureHint(weather.list[0].main.pressure).text }}
+            </span>
+          </div>
+        </div>
+
+      </section>
+
+      <section class="forecast">
+        <h3>Прогноз на ближайшие 24 часа</h3>
+        <div class="forecast-container">
+          <div class="day-card" *ngFor="let item of weather.list | slice:0:8">
+            <p>{{ item.dt_txt | date:'HH:mm' }}</p>
+            <img [src]="'https://openweathermap.org/img/wn/' + item.weather[0].icon + '.png'" [alt]="item.weather[0].description">
+            <p class="temp" [style.color]="getTempColor(item.main.temp)">{{ item.main.temp | temperature:settings.tempUnit | number:'1.0-0' }}°</p>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
+
+  <ng-template #loading>
+    <div class="loader">
+      Загрузка данных о погоде...
+    </div>
+  </ng-template>
+
+  <app-settings-drawer
+    [isOpen]="isSettingsOpen"
+    [settings]="settings"
+    (closeDrawer)="isSettingsOpen = false"
+    (settingsChange)="onSettingsChange($event)">
+  </app-settings-drawer>
+
 </div>
 
-<!-- Наш компонент-drawer -->
-<app-settings-drawer
-  [isOpen]="isSettingsOpen"
-  [settings]="settings"
-  (closeDrawer)="isSettingsOpen = false"
-  (settingsChange)="onSettingsChange($event)">
-</app-settings-drawer>
-
-</div>
-<router-outlet></router-outlet>
-
-<!-- Оставляем для будущей навигации. Этот блок тоже без изменений. -->
 <router-outlet></router-outlet>

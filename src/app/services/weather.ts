@@ -1,7 +1,10 @@
+// src/app/services/weather.service.ts
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
-import {Observable, throwError} from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators'; // <-- 1. Импортируем catchError
 import { environment } from '../../environments/environment';
+import { OpenWeatherResponse } from '../weather.models'; // <-- 1. Импортируем модель
 
 @Injectable({
   providedIn: 'root'
@@ -12,21 +15,22 @@ export class WeatherService {
 
   constructor(private http: HttpClient) { }
 
-  public getForecast(city: string): Observable<any> {
-
-    console.log('SERVER or subsequent navigation: Making API call.');
+  public getForecast(city: string): Observable<OpenWeatherResponse> {
     const params = new HttpParams()
       .set('q', city)
       .set('appid', this.apiKey)
       .set('units', 'metric')
-      .set('lang', 'ru');
+      .set('lang', 'ru')
+      .set('cnt', '8');
 
     const url = `${this.apiUrl}/forecast`;
-    return this.http.get<any>(url, { params });
+    // 3. Добавляем .pipe с обработкой ошибок
+    return this.http.get<OpenWeatherResponse>(url, { params }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   private handleError(error: HttpErrorResponse) {
-    // ... твой код обработки ошибок остается без изменений
     let userMessage = 'Не удалось загрузить данные о погоде. Попробуйте позже.';
     if (error.status === 401) {
       userMessage = 'Ошибка конфигурации: неверный API ключ.';

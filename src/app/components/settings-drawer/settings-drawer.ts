@@ -1,4 +1,3 @@
-// src/app/components/settings-drawer/settings-drawer.component.ts
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { UserSettings } from '../../services/settings';
 import { CommonModule } from '@angular/common';
@@ -8,8 +7,8 @@ import { FormsModule } from '@angular/forms'; // <-- Важно для [(ngModel
   selector: 'app-settings-drawer',
   standalone: true,
   imports: [CommonModule, FormsModule], // <-- Добавляем FormsModule
-  templateUrl: './settings-drawer.component.html',
-  styleUrls: ['./settings-drawer.component.scss']
+  templateUrl: './settings-drawer.html',
+  styleUrls: ['./settings-drawer.scss']
 })
 export class SettingsDrawerComponent {
   @Input() settings!: UserSettings; // Принимает текущие настройки

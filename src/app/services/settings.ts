@@ -1,8 +1,9 @@
-// src/app/services/settings.service.ts
-import { Injectable, signal } from '@angular/core';
+// src/app/services/settings.ts
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core'; // <-- 1. Импортируем нужные инструменты
+import { isPlatformBrowser } from '@angular/common'; // <-- 1. И этот тоже
 import { BehaviorSubject, Observable } from 'rxjs';
 
-// --- 1. Определяем типы для всех настроек ---
+// --- Определяем типы для всех настроек (без изменений) ---
 export type TempUnit = 'C' | 'F';
 export type WindUnit = 'ms' | 'kmh' | 'mph';
 export type PressureUnit = 'hPa' | 'mmHg';
@@ -22,16 +23,32 @@ export interface UserSettings {
 })
 export class SettingsService {
   private readonly storageKey = 'weather-app-settings';
+  private isBrowser: boolean;
 
-  // --- 2. Умные настройки по умолчанию ---
+  private settingsSubject: BehaviorSubject<UserSettings>;
+  public settings$: Observable<UserSettings>;
+
+  // --- 3. Внедряем PLATFORM_ID, чтобы определить, где запущен код ---
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    // isPlatformBrowser вернет true только если код выполняется в браузере
+    this.isBrowser = isPlatformBrowser(this.platformId);
+
+    // Инициализируем BehaviorSubject с настройками (метод loadSettings теперь тоже "умный")
+    this.settingsSubject = new BehaviorSubject<UserSettings>(this.loadSettings());
+    this.settings$ = this.settingsSubject.asObservable();
+  }
+
   private getSystemDefaults(): UserSettings {
-    // Определяем тему системы
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const systemTheme: Theme = 'auto'; // По дефолту 'auto'
+    let systemTheme: Theme = 'auto';
+    let systemLang: Language = 'en'; // Безопасное значение по умолчанию для сервера
 
-    // Определяем язык браузера
-    const browserLang = navigator.language.split('-')[0];
-    const systemLang: Language = browserLang === 'ru' ? 'ru' : 'en';
+    // --- 4. Выполняем этот блок ТОЛЬКО в браузере ---
+    if (this.isBrowser) {
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      systemTheme = 'auto'; // По факту, клиент сам разберется с 'auto'
+      const browserLang = navigator.language.split('-')[0];
+      systemLang = browserLang === 'ru' ? 'ru' : 'en';
+    }
 
     return {
       tempUnit: 'C',
@@ -42,18 +59,14 @@ export class SettingsService {
     };
   }
 
-  // --- 3. Используем BehaviorSubject для реактивности ---
-  private settingsSubject: BehaviorSubject<UserSettings>;
-  public settings$: Observable<UserSettings>;
-
-  constructor() {
-    // Инициализируем BehaviorSubject с настройками из localStorage или системными
-    this.settingsSubject = new BehaviorSubject<UserSettings>(this.loadSettings());
-    this.settings$ = this.settingsSubject.asObservable();
-  }
-
   private loadSettings(): UserSettings {
     const defaults = this.getSystemDefaults();
+
+    // --- 4. Проверяем, что мы в браузере, перед доступом к localStorage ---
+    if (!this.isBrowser) {
+      return defaults; // На сервере просто возвращаем дефолтные настройки
+    }
+
     try {
       const savedSettings = localStorage.getItem(this.storageKey);
       return savedSettings ? { ...defaults, ...JSON.parse(savedSettings) } : defaults;
@@ -66,26 +79,16 @@ export class SettingsService {
   private saveAndBroadcast(newSettings: Partial<UserSettings>): void {
     const currentSettings = this.settingsSubject.value;
     const mergedSettings = { ...currentSettings, ...newSettings };
-    localStorage.setItem(this.storageKey, JSON.stringify(mergedSettings));
+
+    // --- 4. Сохраняем в localStorage только в браузере ---
+    if (this.isBrowser) {
+      localStorage.setItem(this.storageKey, JSON.stringify(mergedSettings));
+    }
+
     this.settingsSubject.next(mergedSettings);
   }
 
-  // --- 4. Единый метод для обновления любых настроек ---
   public updateSettings(newSettings: Partial<UserSettings>): void {
     this.saveAndBroadcast(newSettings);
-  }
-
-  // --- 5. Метод для применения темы ---
-  // Он будет добавлять/убирать классы на <body> для глобального эффекта
-  public applyTheme(theme: Theme): void {
-    const body = document.body;
-    body.classList.remove('light-theme', 'dark-theme');
-
-    if (theme === 'auto') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      body.classList.add(prefersDark ? 'dark-theme' : 'light-theme');
-    } else {
-      body.classList.add(theme === 'dark' ? 'dark-theme' : 'light-theme');
-    }
   }
 }

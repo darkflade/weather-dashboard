@@ -1,7 +1,14 @@
+// src/app/components/settings-drawer.scss
+
 :host {
+  // Используем CSS-переменную, чтобы легко менять ширину
   --drawer-width: 300px;
 }
 
+/*
+  Оверлей для затемнения фона.
+  Он теперь тоже плавно появляется.
+*/
 .overlay {
   position: fixed;
   top: 0;
@@ -10,54 +17,127 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s;
+  visibility: hidden; // Прячем полностью, чтобы не мешал кликам
+  transition: opacity 0.3s, visibility 0s 0.3s; // Задержка для visibility
   z-index: 100;
 }
 
 .overlay.open {
   opacity: 1;
   visibility: visible;
+  transition: opacity 0.3s;
 }
 
+/*
+  Сам drawer.
+*/
 .drawer {
   position: fixed;
   top: 0;
-  right: calc(-1 * var(--drawer-width)); // Спрятан за экраном
+  // --- 1. ПЕРЕМЕЩАЕМ НАЛЕВО ---
+  // Начальное положение - полностью за левым краем экрана.
+  // ИСПОЛЬЗУЕМ TRANSFORM: это производительнее и надежнее, чем менять left/right.
+  left: 0;
+  transform: translateX(-100%);
+
   width: var(--drawer-width);
   height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
 
-  // --- Эффект "стекла" ---
-  background: rgba(255, 255, 255, 0.1);
+  // --- 2. УЛУЧШАЕМ ЭФФЕКТ СТЕКЛА ---
+  // Фон с альфа-каналом (прозрачностью)
+  background: rgba(30, 41, 59, 0.7); // Сделал фон чуть темнее для контраста
+
+  // Главное свойство для размытия фона
   backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(15px); // Для поддержки Safari
 
-  padding: 20px;
-  box-shadow: -10px 0 20px rgba(0, 0, 0, 0.2);
-  transition: right 0.3s ease-out;
+  // Тонкая граница справа, чтобы отделить "стекло" от контента
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+
+  // Тень для придания глубины
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+
+  // Плавный переход для анимации выезда
+  transition: transform 0.3s ease-out;
   z-index: 101;
-  color: white; /* Цвет текста по умолчанию для стекла */
+
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
+// Когда drawer открыт, он сдвигается в видимую область
 .drawer.open {
-  right: 0;
+  transform: translateX(0);
 }
 
+// --- 3. АДАПТИВНЫЕ СТИЛИ ДЛЯ ТЕМ ---
+
+// :host-context() позволяет нам посмотреть, какой класс есть у родительского элемента.
+// Это идеальное решение для адаптации к темам из app.component!
+
+// Стили для СВЕТЛОЙ ТЕМЫ
+:host-context(.dark-theme) .drawer {
+  background: rgba(255, 255, 255, 0.6); // Светлый фон
+  color: #111827; // Темный текст
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+
+  // Стили для контролов в светлой теме
+  select, button {
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #111827;
+  }
+}
+
+// Стили для ТЕМНОЙ ТЕМЫ (можешь оставить как есть или использовать эти)
+:host-context(.light-theme) .drawer {
+  background: rgba(30, 41, 59, 0.7); // Темный фон
+  color: #e2e8f0; // Светлый текст
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+
+  // Стили для контролов в темной теме
+  select, button {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+  }
+}
+
+// Общие стили для группы настроек
 .setting-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+label {
+  opacity: 0.8;
+  font-size: 14px;
+}
+
+// Общие стили для селектов и кнопок
 select, button {
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: rgba(0, 0, 0, 0.2);
-  color: white;
   font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+select:hover, button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+:host-context(.light-theme) select:hover,
+:host-context(.light-theme) button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.close-btn {
+  margin-top: auto; // Прижимает кнопку "Закрыть" к низу
 }

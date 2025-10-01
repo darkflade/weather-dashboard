@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SettingsDrawer } from './settings-drawer';
+import { SettingsDrawerComponent } from './settings-drawer';
 
 describe('SettingsDrawer', () => {
-  let component: SettingsDrawer;
-  let fixture: ComponentFixture<SettingsDrawer>;
+  let component: SettingsDrawerComponent;
+  let fixture: ComponentFixture<SettingsDrawerComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SettingsDrawer]
+      imports: [SettingsDrawerComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(SettingsDrawer);
+    fixture = TestBed.createComponent(SettingsDrawerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
