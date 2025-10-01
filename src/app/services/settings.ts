@@ -28,24 +28,19 @@ export class SettingsService {
   private settingsSubject: BehaviorSubject<UserSettings>;
   public settings$: Observable<UserSettings>;
 
-  // --- 3. Внедряем PLATFORM_ID, чтобы определить, где запущен код ---
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    // isPlatformBrowser вернет true только если код выполняется в браузере
     this.isBrowser = isPlatformBrowser(this.platformId);
 
-    // Инициализируем BehaviorSubject с настройками (метод loadSettings теперь тоже "умный")
     this.settingsSubject = new BehaviorSubject<UserSettings>(this.loadSettings());
     this.settings$ = this.settingsSubject.asObservable();
   }
 
   private getSystemDefaults(): UserSettings {
     let systemTheme: Theme = 'auto';
-    let systemLang: Language = 'en'; // Безопасное значение по умолчанию для сервера
+    let systemLang: Language = 'en';
 
-    // --- 4. Выполняем этот блок ТОЛЬКО в браузере ---
     if (this.isBrowser) {
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      systemTheme = 'auto'; // По факту, клиент сам разберется с 'auto'
+      systemTheme = 'auto';
       const browserLang = navigator.language.split('-')[0];
       systemLang = browserLang === 'ru' ? 'ru' : 'en';
     }
@@ -62,9 +57,8 @@ export class SettingsService {
   private loadSettings(): UserSettings {
     const defaults = this.getSystemDefaults();
 
-    // --- 4. Проверяем, что мы в браузере, перед доступом к localStorage ---
     if (!this.isBrowser) {
-      return defaults; // На сервере просто возвращаем дефолтные настройки
+      return defaults;
     }
 
     try {
@@ -80,7 +74,6 @@ export class SettingsService {
     const currentSettings = this.settingsSubject.value;
     const mergedSettings = { ...currentSettings, ...newSettings };
 
-    // --- 4. Сохраняем в localStorage только в браузере ---
     if (this.isBrowser) {
       localStorage.setItem(this.storageKey, JSON.stringify(mergedSettings));
     }
@@ -90,5 +83,9 @@ export class SettingsService {
 
   public updateSettings(newSettings: Partial<UserSettings>): void {
     this.saveAndBroadcast(newSettings);
+  }
+
+  public getCurrentSettings(): UserSettings {
+    return this.settingsSubject.getValue();
   }
 }

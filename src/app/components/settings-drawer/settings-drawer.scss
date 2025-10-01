@@ -79,7 +79,7 @@
 // Это идеальное решение для адаптации к темам из app.component!
 
 // Стили для СВЕТЛОЙ ТЕМЫ
-:host-context(.dark-theme) .drawer {
+:host-context(.light-theme) .drawer {
   background: rgba(255, 255, 255, 0.6); // Светлый фон
   color: #111827; // Темный текст
   border-right: 1px solid rgba(0, 0, 0, 0.1);
@@ -94,7 +94,7 @@
 }
 
 // Стили для ТЕМНОЙ ТЕМЫ (можешь оставить как есть или использовать эти)
-:host-context(.light-theme) .drawer {
+:host-context(.dark-theme) .drawer {
   background: rgba(30, 41, 59, 0.7); // Темный фон
   color: #e2e8f0; // Светлый текст
   border-right: 1px solid rgba(255, 255, 255, 0.1);
@@ -104,6 +104,11 @@
   select, button {
     background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+  }
+
+  option {
+    background-color: #1e293b;
     color: #e2e8f0;
   }
 }

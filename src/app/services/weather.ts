@@ -1,10 +1,11 @@
 // src/app/services/weather.service.ts
-import { Injectable } from '@angular/core';
+import {Inject, Injectable, makeStateKey, PLATFORM_ID, TransferState} from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import {Observable, of, tap, throwError} from 'rxjs';
 import { catchError } from 'rxjs/operators'; // <-- 1. Импортируем catchError
 import { environment } from '../../environments/environment';
-import { OpenWeatherResponse } from '../weather.models'; // <-- 1. Импортируем модель
+import { OpenWeatherResponse } from '../weather.models';
+import {isPlatformServer} from '@angular/common'; // <-- 1. Импортируем модель
 
 @Injectable({
   providedIn: 'root'
@@ -13,19 +14,36 @@ export class WeatherService {
   private readonly apiUrl = environment.owUrl;
   private readonly apiKey = environment.owKey;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private transferState: TransferState,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   public getForecast(city: string): Observable<OpenWeatherResponse> {
+    const key = makeStateKey<OpenWeatherResponse>('forecast-' + city);
+
+    if (this.transferState.hasKey(key)) {
+      const weather = this.transferState.get(key, null)!;
+      this.transferState.remove(key);
+      return of(weather);
+    }
+
     const params = new HttpParams()
       .set('q', city)
       .set('appid', this.apiKey)
       .set('units', 'metric')
-      .set('lang', 'ru')
+      .set('lang', 'en')
       .set('cnt', '8');
 
+    console.log("Take forecast");
     const url = `${this.apiUrl}/forecast`;
-    // 3. Добавляем .pipe с обработкой ошибок
     return this.http.get<OpenWeatherResponse>(url, { params }).pipe(
+      tap(weather => {
+        if (isPlatformServer(this.platformId)) {
+          this.transferState.set(key, weather);
+        }
+      }),
       catchError(this.handleError)
     );
   }
