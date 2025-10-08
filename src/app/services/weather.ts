@@ -3,25 +3,29 @@ import {Inject, Injectable, makeStateKey, PLATFORM_ID, TransferState} from '@ang
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import {Observable, of, tap, throwError} from 'rxjs';
 import { catchError } from 'rxjs/operators'; // <-- 1. Импортируем catchError
+import { OpenWeatherResponse } from '../models/weather.models';
+import {isPlatformServer} from '@angular/common';
+
 import { environment } from '../../environments/environment';
-import { OpenWeatherResponse } from '../weather.models';
-import {isPlatformServer} from '@angular/common'; // <-- 1. Импортируем модель
+import { SettingsService } from './settings';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WeatherService {
-  private readonly apiUrl = environment.owUrl;
-  private readonly apiKey = environment.owKey;
+  private readonly apiUrl = environment.backendServerAddress;
+  //private readonly apiUrl = "http://127.0.0.1:9090/api";
+  //private readonly apiKey = environment.owKey;
 
   constructor(
     private http: HttpClient,
     private transferState: TransferState,
+    private settingsService: SettingsService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
-  public getForecast(city: string): Observable<OpenWeatherResponse> {
-    const key = makeStateKey<OpenWeatherResponse>('forecast-' + city);
+  public getForecast(lat: number, lon: number): Observable<OpenWeatherResponse> {
+    const key = makeStateKey<OpenWeatherResponse>(`forecast-${lat}-${lon}`);
 
     if (this.transferState.hasKey(key)) {
       const weather = this.transferState.get(key, null)!;
@@ -29,15 +33,18 @@ export class WeatherService {
       return of(weather);
     }
 
+    const lang = this.settingsService.getCurrentSettings().language
+
     const params = new HttpParams()
-      .set('q', city)
-      .set('appid', this.apiKey)
+      .set('lat', lat.toString())
+      .set('lon', lon.toString())
       .set('units', 'metric')
-      .set('lang', 'en')
+      .set('lang', lang)
       .set('cnt', '8');
 
     console.log("Take forecast");
     const url = `${this.apiUrl}/forecast`;
+
     return this.http.get<OpenWeatherResponse>(url, { params }).pipe(
       tap(weather => {
         if (isPlatformServer(this.platformId)) {

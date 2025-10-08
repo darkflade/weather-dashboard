@@ -2,7 +2,10 @@ import {Component, HostBinding, OnInit, Inject, PLATFORM_ID, OnDestroy, ViewChil
 import { FormsModule } from '@angular/forms';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import {Observable, Subscription, tap, switchMap, BehaviorSubject} from 'rxjs'; import { distinctUntilChanged, map } from 'rxjs/operators';
+import {Observable, Subscription, tap, switchMap, BehaviorSubject, shareReplay, of, filter} from 'rxjs'; import {
+  catchError,
+  distinctUntilChanged, map
+} from 'rxjs/operators';
 
 // From node packages
 
@@ -13,13 +16,14 @@ import { Chart } from 'chart.js';
 
 // From app packages
 import { WeatherService } from './services/weather';
-import { OpenWeatherResponse } from './weather.models';
+import { OpenWeatherResponse } from './models/weather.models';
 import { SettingsService, UserSettings } from './services/settings';
 import { SearchService } from './services/search.service';
 import { SettingsDrawerComponent } from './components/settings-drawer/settings-drawer';
 import { getTempColor, getPressureHint } from './utils/formatters.utils';
 import { createForecastChart } from './utils/chart.utils';
 import { getBackgroundImage } from './utils/background.utils';
+import { SearchLocation } from './models/search.models';
 
 
 @Component({
@@ -42,20 +46,29 @@ import { getBackgroundImage } from './utils/background.utils';
 export class App implements OnInit, OnDestroy {
   @HostBinding('class') public theme!: string;
 
-  // Weather and settings
-  public weatherData$!: Observable<OpenWeatherResponse>;
-  public settings$: Observable<UserSettings>;
-  private city$ = new BehaviorSubject<string>('Algeria');
-  public isSettingsOpen = false;
-
   private isBrowser: boolean;
   private settingsSub!: Subscription;
   private mediaQueryListener!: (e: MediaQueryListEvent) => void;
 
+  // Weather and settings
+  public weatherData$!: Observable<OpenWeatherResponse>;
+  currentWeather$!: Observable<OpenWeatherResponse>;
+  public settings$: Observable<UserSettings>;
+  private city$ = new BehaviorSubject<SearchLocation | null>({
+    city_en: 'Algiers',
+    city_ru: 'Алжир',
+    lat: 36.7538,
+    lon: 3.0588,
+    country: 'Algeria',
+    country_ru: 'Алжир'
+  });
+  public isSettingsOpen = false;
+
   // SearchService options
   public searchQuery: string = ''; // Оставляем только для связи с input через ngModel
-  public searchResults$: Observable<string[]>; // Это будет наша подписка на "радиостанцию"
+  public searchResults$: Observable<SearchLocation[]>; // Это будет наша подписка на "радиостанцию"
   public isSearchListVisible: boolean = false;
+  public searchHint: string | null = null;
 
   // Chart options
   private chart!: Chart;
@@ -89,9 +102,15 @@ export class App implements OnInit, OnDestroy {
   ngOnInit(): void {
 
     this.weatherData$ = this.city$.pipe(
+      filter((city): city is SearchLocation => !!city),
       switchMap(city =>
-        this.weatherService.getForecast(city)
+        this.weatherService.getForecast(city.lat, city.lon)
       ),
+      shareReplay(1),
+      catchError(error => {
+        console.error(error);
+        return [];
+      }),
       tap(weather => {
         if (weather?.list?.length > 0) {
 
@@ -104,6 +123,8 @@ export class App implements OnInit, OnDestroy {
         }
       })
     );
+
+    this.currentWeather$ = this.weatherData$;
 
     if (this.isBrowser) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -139,19 +160,35 @@ export class App implements OnInit, OnDestroy {
   onSettingsChange(newSettings: Partial<UserSettings>): void {
     this.settingsService.updateSettings(newSettings);
     this.renderChart();
+    if (newSettings.language) {
+      this.city$.next(this.city$.value); // "value" хранит последнее значение
+    }
   }
 
   onSearchInput(): void {
-    this.searchService.handleSearchInput(this.searchQuery);
+    if (this.searchQuery.length < 2) {
+      this.searchHint = 'Введите как минимум 2 символа...';
+      this.searchService.clearSearchResults();
+    } else {
+      this.searchHint = null;
+      this.searchService.handleSearchInput(this.searchQuery);
+    }
   }
 
-  selectCity(city: string): void {
-    console.log(`Выбран город: ${city}. В будущем здесь будет вызов API.`);
-    this.searchQuery = city;
+  selectCity(city: SearchLocation): void {
+    const currentLang = this.settingsService.getCurrentSettings().language;
+    const cityName = currentLang === 'ru' ? city.city_ru : city.city_en;
+
+    this.searchQuery = cityName;
     this.searchService.clearSearchResults();
     this.isSearchListVisible = false;
 
     this.city$.next(city);
+  }
+
+  getDisplayName(city: SearchLocation): string {
+    const currentLang = this.settingsService.getCurrentSettings().language;
+    return `${currentLang === 'ru' ? city.city_ru : city.city_en}, ${city.country_ru}`;
   }
 
   /** Управляем видимостью списка */
@@ -187,4 +224,5 @@ export class App implements OnInit, OnDestroy {
   public getPressureHint = getPressureHint;
   public getBackgroundImage = getBackgroundImage;
 
+  //protected readonly location = location;
 }

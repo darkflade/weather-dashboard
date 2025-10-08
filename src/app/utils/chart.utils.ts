@@ -30,11 +30,11 @@ export function createForecastChart(
     })
   );
 
-  // Данные для графика. Если выбраны Фаренгейты, сразу конвертируем.
   const displayData = forecastData.map(item => {
     const tempC = item.main.temp;
     return settings.tempUnit === 'F' ? tempC * 9/5 + 32 : tempC;
   });
+
 
   return new Chart(context, {
     type: 'line',
@@ -45,13 +45,13 @@ export function createForecastChart(
           label: `Температура, °${settings.tempUnit}`,
           data: displayData,
           fill: false,
-          borderWidth: 4,
+          borderWidth: 3,
+          hoverBorderWidth: 5,
           tension: 0.4,
           segment: {
             borderColor: ctx => {
               const originalTemp1 = forecastData[ctx.p0DataIndex].main.temp;
               const originalTemp2 = forecastData[ctx.p1DataIndex].main.temp;
-
               const gradient = context.createLinearGradient(ctx.p0.x, 0, ctx.p1.x, 0);
               gradient.addColorStop(0, getTempColor(originalTemp1));
               gradient.addColorStop(1, getTempColor(originalTemp2));
@@ -60,9 +60,10 @@ export function createForecastChart(
           },
           pointBackgroundColor: (ctx) => getTempColor(forecastData[ctx.dataIndex].main.temp),
           pointBorderColor: (ctx) => getTempColor(forecastData[ctx.dataIndex].main.temp),
-          pointBorderWidth: 2,
-          pointRadius: 5,
+          pointBorderWidth: 0.5,
+          pointRadius: 3,
           pointHoverRadius: 8,
+          pointHoverBorderWidth: 3,
         },
       ],
     },
@@ -72,16 +73,32 @@ export function createForecastChart(
       plugins: {
         legend: { display: false },
         tooltip: {
+          enabled: true,
+          backgroundColor: 'rgba(30, 41, 59, 0.7)',
+          //backdropFilter: 'blur(5px)',
+          titleFont: { size: 14, weight: 'bold' },
+          bodyFont: { size: 16, weight: 'bolder' },
+          padding: 12,
+          cornerRadius: 10,
+          displayColors: false, // Убираем квадратик с цветом
           callbacks: {
+            title: (tooltipItems) => `Время: ${tooltipItems[0].label}`,
             label: (context) => `${Number(context.formattedValue).toFixed(0)}°${settings.tempUnit}`,
           },
         },
       },
       scales: {
-        x: { grid: { display: false } },
+        x: {
+          grid: { display: false },
+          border: { display: false }, // Убираем линию оси X
+          ticks: { padding: 10 }
+        },
         y: {
+          grid: { display: false }, // Убираем горизонтальную сетку
+          border: { display: false }, // Убираем линию оси Y
           beginAtZero: false,
           ticks: {
+            padding: 10,
             callback: (value) => `${Number(value).toFixed(0)}°`,
           },
         },

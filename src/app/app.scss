@@ -248,23 +248,27 @@ header h1 {
   padding-top: 2rem;
   margin-inline: 1.2rem;
 }
-.pressure-details {
+.element-details {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
-  align-content: center;
-}
-.wind-details, .wind-direction {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5em;
-  line-height: 1;
-  transition: transform 0.5s ease-out;
+  gap: 0.25rem;
+  justify-content: center;
+
+}
+.humidity-details {
+
+}
+.pressure-details {
+
 }
 .wind-details {
   font-size:1rem;
+}
+.wind-direction {
+  font-size: 1.5em;
+  line-height: 1;
+  transition: transform 0.5s ease-out;
 }
 
 // --- Стили подсказок давления (адаптируем под темы) ---

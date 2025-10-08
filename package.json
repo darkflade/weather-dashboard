@@ -33,6 +33,7 @@
     "@angular/platform-server": "^20.3.0",
     "@angular/router": "^20.3.0",
     "@angular/ssr": "^20.3.2",
+    "axios": "^1.12.2",
     "chart.js": "^4.5.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",

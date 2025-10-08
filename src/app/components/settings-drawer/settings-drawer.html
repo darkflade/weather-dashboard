@@ -39,7 +39,13 @@
     </select>
   </div>
 
-  <!-- Сюда добавим язык -->
+  <div class="setting-group">
+    <label for="pressure">Язык</label>
+    <select id="pressure" [ngModel]="settings.language" (ngModelChange)="settingsChange.emit({language: $event})">
+      <option value="en">English</option>
+      <option value="ru">Русский</option>
+    </select>
+  </div>
 
   <button class="close-btn" (click)="closeDrawer.emit()">Закрыть</button>
 </div>
