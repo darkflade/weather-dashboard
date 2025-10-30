@@ -24,6 +24,7 @@ async fn main() -> std::io::Result<()> {
             .service(forecast)
             .service(search)
             .service(test)
+            .service(daily_forecast)
             .wrap(actix_cors::Cors::permissive())
     })
         .bind(address)?
@@ -57,11 +58,15 @@ async fn forecast(query: web::Query<std::collections::HashMap<String, String>>) 
         Some(c) => c,
         None => return HttpResponse::BadRequest().body("Missing longitude"),
     };
+    let language = match query.get("lang") {
+        Some(l) => l.as_str(),
+        None => "en",
+    };
 
     let api_key = env::var("OW_API_KEY").unwrap();
     let url = format!(
-        "https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&appid={}&units=metric&cnt=8&lang=en",
-        lat, lon, api_key
+        "https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&appid={}&units=metric&lang={}",
+        lat, lon, api_key, language
     );
     println!("[DEBUG]Requested forecast for {} {}", lat, lon);
 
@@ -74,6 +79,46 @@ async fn forecast(query: web::Query<std::collections::HashMap<String, String>>) 
     }
 }
 
+#[get("/api/daily-forecast")]
+async fn daily_forecast(query: web::Query<std::collections::HashMap<String, String>>) -> HttpResponse {
+    let lat = match query.get("lat") {
+        Some(c) => c,
+        None => return HttpResponse::BadRequest().body("Missing latitude"),
+    };
+    let lon = match query.get("lon") {
+        Some(c) => c,
+        None => return HttpResponse::BadRequest().body("Missing longitude"),
+    };
+    let language = match query.get("lang") {
+        Some(l) => l.as_str(),
+        None => "en",
+    };
+    let cnt = match query.get("cnt") {
+        Some(c) => c,
+        None => "12",
+    };
+
+    let api_key = env::var("OW_API_KEY").unwrap();
+    let url = format!(
+        "https://api.openweathermap.org/data/2.5/forecast/daily?lat={}&lon={}&appid={}&units=metric&lang={}&cnt={}",
+        lat, lon, api_key, language, cnt
+    );
+    println!("[DEBUG]Requested daily forecast for {} {}", lat, lon);
+
+    match reqwest::get(&url).await {
+        Ok(resp) => {
+            let body = resp.text().await.unwrap_or_else(|_| "{}".to_string());
+            HttpResponse::Ok().content_type("application/json").body(body)
+        }
+        Err(_) => {
+            println!("[DEBUG]Error fetching weather");
+            HttpResponse::InternalServerError().body("Error fetching weather")
+        },
+    }
+}
+/*
+#[get("/api/pictures")]
+*/
 #[get("/api/search")]
 async fn search(
     data: web::Data<AppState>,

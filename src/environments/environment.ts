@@ -1,5 +1,9 @@
 // src/environments/environment.template.ts
 export const environment = {
   production: false,
-  backendServerAddress: 'https://evilempty.space/api'
+  useMockWeather: 0, // true, false
+  //backendServerAddress: 'https://evilempty.space/api'
+  backendServerAddress: 'http://192.169.137.1:9090/api'
+  //backendServerAddress: 'http://192.168.1.4:9090/api'
+
 };

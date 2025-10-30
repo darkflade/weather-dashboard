@@ -1,0 +1,25 @@
+<div class="overlay" [class.open]="isOpen" (click)="closeDrawer.emit()"></div>
+
+<div class="drawer" [class.open]="isOpen">
+  <h2>Избранные города</h2>
+
+  @if (favorites$ | async; as favorites) {
+    <div
+      class="favorites-list"
+      cdkDropList
+      (cdkDropListDropped)="onDrop($event, favorites)">
+      @for (fav of favorites; track fav.id) {
+        <div class="favorite-item" cdkDrag (click)="onSelect(fav)">
+          <div class="drag-handle" cdkDragHandle>☰</div>
+          <div class="city-info">
+            <span class="city-name">{{ fav.city_ru }}, {{ fav.country_ru }}</span>
+            <span class="city-name-en">{{ fav.city_en }}</span>
+          </div>
+          <button class="delete-btn" (click)="onDelete(fav.id!, $event)">×</button>
+        </div>
+      } @empty {
+        <p class="empty-list-message">Вы еще не добавили ни одного города в избранное.</p>
+      }
+    </div>
+  }
+</div>

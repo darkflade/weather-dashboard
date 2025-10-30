@@ -1,4 +1,3 @@
-// Эта модель описывает один объект из списка результатов поиска
 export interface SearchLocation {
   city_en: string;
   city_ru: string;

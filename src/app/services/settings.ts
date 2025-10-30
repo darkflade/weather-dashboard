@@ -1,6 +1,5 @@
-// src/app/services/settings.ts
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core'; // <-- 1. Импортируем нужные инструменты
-import { isPlatformBrowser } from '@angular/common'; // <-- 1. И этот тоже
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 // --- Определяем типы для всех настроек (без изменений) ---

@@ -3,19 +3,18 @@ import {Inject, Injectable, makeStateKey, PLATFORM_ID, TransferState} from '@ang
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import {Observable, of, tap, throwError} from 'rxjs';
 import { catchError } from 'rxjs/operators'; // <-- 1. Импортируем catchError
-import { OpenWeatherResponse } from '../models/weather.models';
 import {isPlatformServer} from '@angular/common';
 
 import { environment } from '../../environments/environment';
+import { OpenWeatherResponse, OpenWeatherResponseExtended } from '../models/weather.models';
 import { SettingsService } from './settings';
+import {generateMockExtendedWeather, generateMockWeather} from '../utils/mock.data';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WeatherService {
   private readonly apiUrl = environment.backendServerAddress;
-  //private readonly apiUrl = "http://127.0.0.1:9090/api";
-  //private readonly apiKey = environment.owKey;
 
   constructor(
     private http: HttpClient,
@@ -25,6 +24,10 @@ export class WeatherService {
   ) {}
 
   public getForecast(lat: number, lon: number): Observable<OpenWeatherResponse> {
+    if (environment.useMockWeather) {
+      console.log('Using mock weather data (dev mode)');
+      return of(generateMockWeather());
+    }
     const key = makeStateKey<OpenWeatherResponse>(`forecast-${lat}-${lon}`);
 
     if (this.transferState.hasKey(key)) {
@@ -46,6 +49,38 @@ export class WeatherService {
     const url = `${this.apiUrl}/forecast`;
 
     return this.http.get<OpenWeatherResponse>(url, { params }).pipe(
+      tap(weather => {
+        if (isPlatformServer(this.platformId)) {
+          this.transferState.set(key, weather);
+        }
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  public getExtendedForecast(lat: number, lon: number): Observable<OpenWeatherResponseExtended> {
+    if (environment.useMockWeather) {
+      console.log('Using mock weather data (dev mode)');
+      return of(generateMockExtendedWeather());
+    }
+    const key = makeStateKey<OpenWeatherResponseExtended>(`forecast-by-day-${lat}-${lon}`);
+    if (this.transferState.hasKey(key)) {
+      const weather = this.transferState.get(key, null)!;
+      this.transferState.remove(key);
+      return of(weather);
+    }
+
+    const lang = this.settingsService.getCurrentSettings().language;
+    const params = new HttpParams()
+      .set('lat', lat.toString())
+      .set('lon', lon.toString())
+      .set('units', 'metric')
+      .set('lang', lang)
+      .set('cnt', '12');
+
+    const url = `${this.apiUrl}/daily-forecast`;
+
+    return this.http.get<OpenWeatherResponseExtended>(url, { params }).pipe(
       tap(weather => {
         if (isPlatformServer(this.platformId)) {
           this.transferState.set(key, weather);

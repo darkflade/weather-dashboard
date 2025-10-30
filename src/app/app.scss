@@ -16,8 +16,8 @@ body {
   --card-border-color: rgba(255, 255, 255, 0.1);
   --hover-bg-color: #334155;
   --chart-axis-color: var(--text-color-muted);
-  .temperature {
-    background-color: #00000050;
+  .temperature, .min-max-container {
+    background-color: #00000060;
     border: 5px solid #00000010;
   }
   .search-box {
@@ -37,8 +37,8 @@ body {
   --card-border-color: rgba(0, 0, 0, 0.08);
   --hover-bg-color: #e2e8f0;
   --chart-axis-color: var(--text-color-muted);
-  .temperature {
-    background-color: #ffffff50;
+  .temperature, .min-max-container {
+    background-color: #ffffffb0;
     border: 5px solid #ffffff10;
   }
   .search-box {
@@ -103,7 +103,6 @@ body {
   border-radius: var(--border-radius-main);
   padding: 2rem;
   position: relative;
-  margin-bottom: 2rem;
 }
 
 // --- ОСНОВНАЯ РАЗМЕТКА ---
@@ -114,20 +113,23 @@ header h1 {
   font-weight: 700;
   padding-inline: 1.2rem;
 }
+h2 {
+  margin-top:0.5rem;
+  margin-left: 1rem;
+}
 
 // --- СТИЛИ КОНТЕНТА КАРТОЧКИ ---
-.settings-btn {
+.drawer-btn {
   position: absolute;
-  top: 1rem;
   left: 1rem;
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 3rem;
   padding: 0.5rem;
   border-radius: 50%;
   cursor: pointer;
-  width: 44px;
-  height: 44px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,6 +137,13 @@ header h1 {
   color: var(--text-color-muted);
 
   &:hover { background: var(--hover-bg-color); }
+}
+
+.setting-btn {
+  top: 1rem;
+}
+.favorites-btn {
+  top: 8rem;
 }
 
 .header-content {
@@ -191,12 +200,23 @@ header h1 {
   }
 
   li {
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-    &:hover {
-      background-color: var(--hover-bg-color);
+    .favorite-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: var(--text-color-muted);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+
+      &:hover {
+        color: #facc15; // Желтый цвет
+        background: var(--hover-bg-color);
+      }
     }
   }
 }
@@ -209,6 +229,25 @@ header h1 {
   margin: 1rem 0;
 
   img { width: 100px; height: 100px; }
+}
+
+.min-max-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  margin-left: 1rem;
+  line-height: 1;
+  border-radius: 1rem;
+  margin-bottom: 3.5rem;
+}
+
+.temp-max {
+  font-weight: 600;
+}
+
+.temp-min {
+  font-weight: 400;
 }
 
 // --- 3. СТИЛИ ДЛЯ "ОЩУЩАЕТСЯ КАК" ---
@@ -290,8 +329,105 @@ header h1 {
 // --- Стили графика ---
 .chart-container {
   height: 200px;
-  margin-top: 1rem;
+  margin-top: 2rem;
   padding: 1rem;
+}
+
+// --- Стили на интерактивный ежедневный прогноз ---
+.forecast-daily {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.day-card {
+  // Наш фирменный "стеклянный" стиль
+  background: var(--card-bg-color);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--card-border-color);
+
+  border-radius: var(--border-radius-main);
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease-out, border-color 0.2s;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  &.selected {
+    border-color: var(--text-color);
+    transform: translateY(-5px) scale(1.03);
+  }
+}
+
+.day-name {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.day-card img {
+  width: 75px;
+  height: 75px;
+  margin: -0.5rem 0; // Компенсируем лишние отступы у иконки
+}
+
+.day-temp {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 1.1rem;
+}
+
+.show-more-container {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.show-more-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 2rem;
+  border: 1px solid var(--card-border-color);
+  background: var(--card-bg-color);
+  color: var(--text-color);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  //width: 63rem;
+  // TODO Fix Button width
+
+  &:hover {
+    transform: scale(1.05);
+    border-color: var(--text-color);
+  }
+}
+
+.reduced-card {
+  transition: none;
+
+  &:hover {
+    transform: none;
+    border-color: var(--text-color);
+  }
+}
+
+.extended-forecast {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.loader-small {
+  grid-column: 1 / -1; // Растягиваем на всю ширину грида
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: var(--text-color-muted);
 }
 
 // --- АДАПТИВНОСТЬ ---

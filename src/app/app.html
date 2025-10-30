@@ -12,9 +12,8 @@
 
       <div class="dashboard-wrapper">
         <header>
-          <button class="settings-btn" (click)="isSettingsOpen = true">⚙️</button>
-          <h1>Погодный дашборд</h1>
-
+          <button class="drawer-btn settings-btn" (click)="isSettingsOpen = true">⚙️</button>
+          <button class="drawer-btn favorites-btn" (click)="isFavoritesOpen = true">⭐</button>
           <div class="search-container">
             <input
               class="search-box"
@@ -23,7 +22,7 @@
               (input)="onSearchInput()"
               (focus)="onSearchFocus()"
               (blur)="onSearchBlur()"
-              autocomplete="off">
+              autocomplete="on">
 
             <!-- Выпадающий список с результатами -->
             @if (search || searchHint) {
@@ -37,6 +36,7 @@
                       @for (city of search; track city) {
                         <li (click)="selectCity(city)">
                           {{ getDisplayName(city) }}
+                          <button class="favorite-btn" (click)="addFavorite(city, $event)">★</button>
                         </li>
                       }
                     }
@@ -60,10 +60,18 @@
                 <div class="temperature-details">
                 <span class="temperature"
                       [style.color]="getTempColor(weather.list[0].main.temp)">{{ weather.list[0].main.temp | temperature:settings.tempUnit | number:'1.0-0' }}
-                  °{{ settings.tempUnit }}</span>
-                  <span
-                    class="feels-like">Ощущается как {{ weather.list[0].main.feels_like | temperature:settings.tempUnit | number:'1.0-0' }}
-                    °{{ settings.tempUnit }}</span>
+                  °{{ settings.tempUnit }}
+                </span>
+                <span class="feels-like">
+                  Ощущается как {{ weather.list[0].main.feels_like | temperature:settings.tempUnit | number:'1.0-0' }}
+                  °{{ settings.tempUnit }}
+                </span>
+                </div>
+                <div class="min-max-container">
+                  <span class="temp-max"
+                        [style.color]="getTempColor(weather.list[0].main.temp_max)">☀️ {{ weather.list[0].main.temp_max | temperature:settings.tempUnit | number:'1.0-0' }}°{{ settings.tempUnit }}</span>
+                  <span class="temp-min"
+                        [style.color]="getTempColor(weather.list[0].main.temp_min)">🌑️ {{ weather.list[0].main.temp_min | temperature:settings.tempUnit | number:'1.0-0' }}°{{ settings.tempUnit }}</span>
                 </div>
               </div>
 
@@ -94,6 +102,73 @@
                 <canvas #forecastChart></canvas>
               </div>
             </section>
+
+            <section class="forecast-daily">
+
+              @if (todayForecast) {
+                <div
+                  class="day-card today"
+                  [class.selected]="selectedDayForecast?.date?.toDateString() === todayForecast.date.toDateString()"
+                  (click)="selectDay(todayForecast)">
+
+                  <div class="day-name">Сейчас</div> <!-- Жестко заданное имя -->
+                  <img [src]="'https://openweathermap.org/img/wn/' + todayForecast.icon + '@2x.png'" [alt]="'Погода на 24 часа'">
+                  <div class="day-temp">
+                    <span class="temp-max">{{ todayForecast.temp_max | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                    <span class="temp-min">{{ todayForecast.temp_min | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                  </div>
+                </div>
+              }
+
+              @for (day of weather.list | dailyForecast; track day.date) {
+                <div
+                  class="day-card"
+                  [class.selected]="day.date.toDateString() === selectedDayForecast?.date?.toDateString()"
+                  (click)="selectDay(day)">
+
+                  <div class="day-name">{{ day.date | date:'EEEE' }}</div>
+                  <img [src]="'https://openweathermap.org/img/wn/' + day.icon + '@2x.png'" [alt]="'Погода на ' + (day.date | date)">
+                  <div class="day-temp">
+                    <span class="temp-max">{{ day.temp_max | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                    <span class="temp-min">{{ day.temp_min | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                  </div>
+
+                </div>
+              }
+
+              <!--
+                Extended Forecast
+                Extended Forecast NOT Set
+              -->
+              @if (!isExtendedForecastVisible) {
+                <div class="show-more-container">
+                  <button class="show-more-btn" (click)="loadExtendedForecast()">
+                    Прогноз на 10 дней
+                  </button>
+                </div>
+              }
+
+              <!--
+                Extended Forecast IS Set
+              -->
+              @if (isExtendedForecastVisible) {
+                  @if (isExtendedLoading) {
+                    <div class="loader-small">Загрузка...</div>
+                  } @else {
+                    @for (day of extendedForecast; track day.dt) {
+                      <div class="day-card reduced-card">
+                        <div class="day-name">{{ day.dt * 1000 | date:'EEEE' }}</div>
+                        <img [src]="'https://openweathermap.org/img/wn/' + day.weather[0].icon + '@2x.png'" [alt]="day.weather[0].description">
+                        <div class="day-temp">
+                          <span class="temp-max">{{ day.temp.max | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                          <span class="temp-min">{{ day.temp.min | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                        </div>
+                      </div>
+                    }
+                  }
+              }
+
+            </section>
           </main>
         }
 
@@ -111,6 +186,8 @@
       </div>
     </ng-template>
 
+
+  </div>
     <app-settings-drawer
       [isOpen]="isSettingsOpen"
       [settings]="settings"
@@ -118,7 +195,11 @@
       (settingsChange)="onSettingsChange($event)">
     </app-settings-drawer>
 
-  </div>
+    <app-favorites-drawer
+      [isOpen]="isFavoritesOpen"
+      (closeDrawer)="isFavoritesOpen = false"
+      (citySelected)="selectCity($event)">
+    </app-favorites-drawer>
 } @else {
   <div class="loading">
     Settings Loading

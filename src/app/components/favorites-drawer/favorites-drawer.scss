@@ -21,7 +21,6 @@
   transition: opacity 0.3s;
 }
 
-
 .drawer {
   position: fixed;
   top: 0;
@@ -55,30 +54,16 @@
   flex-direction: column;
   gap: 24px;
 }
-
-// Когда drawer открыт, он сдвигается в видимую область
 .drawer.open {
   transform: translateX(0);
 }
-
-// --- 3. АДАПТИВНЫЕ СТИЛИ ДЛЯ ТЕМ ---
-
-// :host-context() позволяет нам посмотреть, какой класс есть у родительского элемента.
-// Это идеальное решение для адаптации к темам из app.component!
-
 // Стили для СВЕТЛОЙ ТЕМЫ
 :host-context(.light-theme) .drawer {
-  background: white; // Светлый фон
-  color: #0a0f17; // Темный текст
+  background: white;
+  color: #0a0f17;
   border-right: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
 
-  // Стили для контролов в светлой теме
-  select, button {
-    background-color: rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    color: #111827;
-  }
 }
 
 // Стили для ТЕМНОЙ ТЕМЫ (можешь оставить как есть или использовать эти)
@@ -87,50 +72,75 @@
   color: #e2e8f0; // Светлый текст
   border-right: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
-
-  // Стили для контролов в темной теме
-  select, button {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #e2e8f0;
-  }
-
-  option {
-    background-color: #1e293b;
-    color: #e2e8f0;
-  }
 }
+/*
+.drawer {
+  background: var(--card-bg-color);
+  backdrop-filter: blur(15px);
+}*/
 
-// Общие стили для группы настроек
-.setting-group {
+.favorites-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
-label {
-  opacity: 0.8;
-  font-size: 14px;
-}
-
-// Общие стили для селектов и кнопок
-select, button {
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
+.favorite-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: grab;
   transition: background-color 0.2s;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
 
-select:hover, button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.drag-handle {
+  color: var(--text-color-muted);
 }
 
-:host-context(.light-theme) select:hover,
-:host-context(.light-theme) button:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+.city-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
-.close-btn {
-  margin-top: auto; // Прижимает кнопку "Закрыть" к низу
+.city-name {
+  font-weight: 600;
+}
+
+.city-name-en {
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-color-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+
+  &:hover {
+    color: #ef4444;
+  }
+}
+
+// Стили для перетаскивания от Angular CDK
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 4px;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+  0 8px 10px 1px rgba(0, 0, 0, 0.14),
+  0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
 }

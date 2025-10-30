@@ -1,6 +1,3 @@
-// src/app/weather.models.ts
-
-// Главный интерфейс ответа от OpenWeather /forecast
 export interface OpenWeatherResponse {
   cod: string;
   message: number;
@@ -9,7 +6,6 @@ export interface OpenWeatherResponse {
   city: City;
 }
 
-// Прогноз на конкретный момент времени (один из 40 в списке)
 export interface WeatherListItem {
   dt: number;
   main: MainInfo;
@@ -30,7 +26,6 @@ export interface WeatherListItem {
   dt_txt: string;
 }
 
-// Информация о городе
 export interface City {
   id: number;
   name: string;
@@ -45,7 +40,6 @@ export interface City {
   sunset: number;
 }
 
-// Основные погодные данные (температура, влажность и т.д.)
 export interface MainInfo {
   temp: number;
   feels_like: number;
@@ -58,10 +52,50 @@ export interface MainInfo {
   temp_kf: number;
 }
 
-// Описание погоды (пасмурно, дождь и т.д.)
 export interface WeatherInfo {
   id: number;
   main: string;
   description: string;
   icon: string;
+}
+
+// Extended Daily Forecast
+
+export interface TemperatureDetails {
+  day: number;
+  min: number;
+  max: number;
+  night: number;
+  eve: number;
+  morn: number;
+}
+
+export interface ExtendedWeatherListItem {
+  dt: number;
+  sunrise: number;
+  sunset: number;
+  temp: TemperatureDetails;
+  feels_like: {
+    day: number;
+    night: number;
+    eve: number;
+    morn: number;
+  };
+  pressure: number;
+  humidity: number;
+  weather: WeatherInfo[];
+  speed: number;
+  deg: number;
+  gust: number;
+  clouds: number;
+  pop: number;
+  rain?: number;
+}
+
+export interface OpenWeatherResponseExtended {
+  city: City;
+  cod: string;
+  message: number;
+  cnt: number;
+  list: ExtendedWeatherListItem[];
 }
