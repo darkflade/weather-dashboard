@@ -42,7 +42,7 @@ export function createForecastChart(
       labels: labels,
       datasets: [
         {
-          label: `Температура, °${settings.tempUnit}`,
+          label: `°${settings.tempUnit}`,
           data: displayData,
           fill: false,
           borderWidth: 3,
@@ -80,10 +80,12 @@ export function createForecastChart(
           bodyFont: { size: 16, weight: 'bolder' },
           padding: 12,
           cornerRadius: 10,
-          displayColors: false, // Убираем квадратик с цветом
+          displayColors: false,
           callbacks: {
-            title: (tooltipItems) => `Время: ${tooltipItems[0].label}`,
-            label: (context) => `${Number(context.formattedValue).toFixed(0)}°${settings.tempUnit}`,
+            title:
+              (tooltipItems) => `${tooltipItems[0].label}`,
+            label:
+              (context) => `${Number(context.formattedValue).toFixed(0)}°${settings.tempUnit}`,
           },
         },
       },

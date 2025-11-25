@@ -1,7 +1,7 @@
 <div class="overlay" [class.open]="isOpen" (click)="closeDrawer.emit()"></div>
 
 <div class="drawer" [class.open]="isOpen">
-  <h2>Избранные города</h2>
+  <h2>{{ 'favorites.title' | localize | async }}</h2>
 
   @if (favorites$ | async; as favorites) {
     <div
@@ -12,13 +12,18 @@
         <div class="favorite-item" cdkDrag (click)="onSelect(fav)">
           <div class="drag-handle" cdkDragHandle>☰</div>
           <div class="city-info">
-            <span class="city-name">{{ fav.city_ru }}, {{ fav.country_ru }}</span>
-            <span class="city-name-en">{{ fav.city_en }}</span>
+            @if (settings.language === 'ru') {
+              <span class="city-name">{{ fav.city_ru }}, {{ fav.country_ru }}</span>
+              <span class="city-name-en">{{ fav.city_en }}</span>
+            } @else {
+              <span class="city-name">{{ fav.city_en }}, {{ fav.country }}</span>
+              <span class="city-name-en">{{ fav.city_ru }}</span>
+            }
           </div>
           <button class="delete-btn" (click)="onDelete(fav.id!, $event)">×</button>
         </div>
       } @empty {
-        <p class="empty-list-message">Вы еще не добавили ни одного города в избранное.</p>
+        <p class="empty-list-message">{{ 'favorites.empty_message' | localize | async }}</p>
       }
     </div>
   }

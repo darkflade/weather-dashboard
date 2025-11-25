@@ -3,19 +3,19 @@
 
 <!-- Сам drawer -->
 <div class="drawer" [class.open]="isOpen">
-  <h2>Настройки</h2>
+  <h2>{{ 'settings.title' | localize | async }}</h2>
 
   <div class="setting-group">
-    <label for="theme">Тема</label>
+    <label for="theme">{{ 'settings.theme_label' | localize | async }}</label>
     <select id="theme" [ngModel]="settings.theme" (ngModelChange)="settingsChange.emit({theme: $event})">
-      <option value="auto">Авто (системная)</option>
-      <option value="light">Светлая</option>
-      <option value="dark">Темная</option>
+      <option value="auto">{{ 'settings.theme_auto' | localize | async }}</option>
+      <option value="light">{{ 'settings.theme_light' | localize | async }}</option>
+      <option value="dark">{{ 'settings.theme_dark' | localize | async }}</option>
     </select>
   </div>
 
   <div class="setting-group">
-    <label for="temp">Температура</label>
+    <label for="temp">{{ 'settings.temp_label' | localize | async}}</label>
     <select id="temp" [ngModel]="settings.tempUnit" (ngModelChange)="settingsChange.emit({tempUnit: $event})">
       <option value="C">°C</option>
       <option value="F">°F</option>
@@ -23,29 +23,29 @@
   </div>
 
   <div class="setting-group">
-    <label for="wind">Ветер</label>
+    <label for="wind">{{ 'settings.wind_label' | localize | async}}</label>
     <select id="wind" [ngModel]="settings.windUnit" (ngModelChange)="settingsChange.emit({windUnit: $event})">
-      <option value="ms">м/с</option>
-      <option value="kmh">км/ч</option>
-      <option value="mph">миль/ч</option>
+      <option value="ms">{{ 'units.ms' | localize | async }}</option>
+      <option value="kmh">{{ 'units.kmh' | localize | async }}</option>
+      <option value="mph">{{ 'units.mph' | localize | async }}</option>
     </select>
   </div>
 
   <div class="setting-group">
-    <label for="pressure">Давление</label>
+    <label for="pressure">{{ 'settings.pressure_label' | localize | async}}</label>
     <select id="pressure" [ngModel]="settings.pressureUnit" (ngModelChange)="settingsChange.emit({pressureUnit: $event})">
-      <option value="hPa">гПа</option>
-      <option value="mmHg">мм рт.ст.</option>
+      <option value="hPa">{{ 'units.hpa' | localize | async }}</option>
+      <option value="mmHg">{{ 'units.mmhg' | localize | async }}</option>
     </select>
   </div>
 
   <div class="setting-group">
-    <label for="pressure">Язык</label>
-    <select id="pressure" [ngModel]="settings.language" (ngModelChange)="settingsChange.emit({language: $event})">
-      <option value="en">English</option>
-      <option value="ru">Русский</option>
+    <label for="language">{{ 'settings.language_label' | localize | async }}</label>
+    <select id="language" [ngModel]="settings.language" (ngModelChange)="settingsChange.emit({language: $event})">
+      <option value="en">{{ 'settings.language_en' | localize | async }}</option>
+      <option value="ru">{{ 'settings.language_ru' | localize | async }}</option>
     </select>
   </div>
 
-  <button class="close-btn" (click)="closeDrawer.emit()">Закрыть</button>
+  <button class="close-btn" (click)="closeDrawer.emit()">{{'settings.close_btn' | localize | async}}</button>
 </div>

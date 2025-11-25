@@ -1,0 +1,56 @@
+{
+  "common": {
+    "pressure_low": "Low",
+    "pressure_normal": "Normal",
+    "pressure_high": "High"
+  },
+  "units": {
+    "ms": "m/s",
+    "kmh": "km/h",
+    "mph": "mph",
+    "hpa": "hPa",
+    "mmhg": "mmHg"
+  },
+  "search": {
+    "placeholder": "Find a city...",
+    "hint_min_chars": "Enter at least 2 characters..."
+  },
+  "current": {
+    "feels_like": "Feels like",
+    "cloudiness": "Cloudiness",
+    "visibility": "Visibility",
+    "precip_prob": "Precipitation",
+    "rain_3h": "Rain (3h)",
+    "snow_3h": "Snow (3h)",
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "pressure": "Pressure"
+  },
+  "forecast": {
+    "now": "Now",
+    "extended_btn": "10-day forecast",
+    "extended_loading": "Loading..."
+  },
+  "settings": {
+    "title": "Settings",
+    "theme_label": "Theme",
+    "theme_auto": "Auto (System)",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "temp_label": "Temperature",
+    "wind_label": "Wind",
+    "pressure_label": "Pressure",
+    "language_label": "Language",
+    "language_en": "English",
+    "language_ru": "Русский",
+    "close_btn": "Close"
+  },
+  "favorites": {
+    "title": "Favorite cities",
+    "empty_message": "You haven't added any favorite cities yet."
+  },
+  "loading": {
+    "weather": "Fetching Weather Data...",
+    "settings": "Settings Loading..."
+  }
+}

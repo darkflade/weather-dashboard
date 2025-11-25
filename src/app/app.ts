@@ -10,10 +10,12 @@ import {
   ChangeDetectorRef,
   HostListener,
 } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeRu from '@angular/common/locales/ru';
 import { FormsModule } from '@angular/forms';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import {Observable, Subscription, tap, switchMap, BehaviorSubject, shareReplay, of, filter} from 'rxjs'; import {
+import {Observable, Subscription, tap, switchMap, BehaviorSubject, shareReplay, filter} from 'rxjs'; import {
   catchError,
   distinctUntilChanged, map
 } from 'rxjs/operators';
@@ -34,9 +36,11 @@ import { WeatherService } from './services/weather';
 import { SettingsService, UserSettings } from './services/settings';
 import { SearchService } from './services/search.service';
 import { FavoritesService } from './services/favorites.service';
+import { LocalizationService } from './services/localization.service';
 
   // Pipes
 import { DailyForecast, DailyForecastPipe } from './pipes/daily-forecast.pipe';
+import { LocalizePipe } from './pipes/localization.pipe';
 
   // Utils
 import { getTempColor, getPressureHint } from './utils/formatters.utils';
@@ -46,12 +50,9 @@ import { getBackgroundImage } from './utils/background.utils';
   // Components
 import { SettingsDrawerComponent } from './components/settings-drawer/settings-drawer';
 import { FavoritesDrawer } from './components/favorites-drawer/favorites-drawer';
-
-// Localization
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 ///////////////////////////////////////////////////////////////////////////////////////////
 
+registerLocaleData(localeRu);
 
 @Component({
   selector: 'app-root',
@@ -66,6 +67,7 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
     WindPipe,
     PressurePipe,
     FormsModule,
+    LocalizePipe,
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.scss']
@@ -151,6 +153,7 @@ export class App implements OnInit, OnDestroy {
     private settingsService: SettingsService,
     private favoritesService: FavoritesService,
     private searchService: SearchService,
+    private localizationService: LocalizationService,
     private cdr: ChangeDetectorRef,
     private elementRef: ElementRef,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -158,6 +161,9 @@ export class App implements OnInit, OnDestroy {
     this.isBrowser = isPlatformBrowser(this.platformId);
     this.settings$ = this.settingsService.settings$;
     this.searchResults$ = this.searchService.searchResults$;
+
+    const currentLang = this.settingsService.getCurrentSettings().language;
+    this.localizationService.setLanguage(currentLang);
   }
 
   ngOnInit(): void {
@@ -263,14 +269,17 @@ export class App implements OnInit, OnDestroy {
   onSettingsChange(newSettings: Partial<UserSettings>): void {
     this.settingsService.updateSettings(newSettings);
     this.renderChart();
+
     if (newSettings.language) {
-      this.city$.next(this.city$.value); // "value" хранит последнее значение
+      this.localizationService.setLanguage(newSettings.language);
+      this.city$.next(this.city$.value);
     }
   }
 
   onSearchInput(): void {
     if (this.searchQuery.length < 2) {
-      this.searchHint = 'Введите как минимум 2 символа...';
+      this.searchHint = this.localizationService.translate('search.hint_min_chars');
+      //this.searchHint = 'Введите как минимум 2 символа...';
       this.searchService.clearSearchResults();
     } else {
       this.searchHint = null;
@@ -280,9 +289,8 @@ export class App implements OnInit, OnDestroy {
 
   selectCity(city: SearchLocation): void {
     const currentLang = this.settingsService.getCurrentSettings().language;
-    const cityName = currentLang === 'ru' ? city.city_ru : city.city_en;
 
-    this.searchQuery = cityName;
+    this.searchQuery = currentLang === 'ru' ? city.city_ru : city.city_en;
     this.searchService.clearSearchResults();
     this.isSearchListVisible = false;
 
@@ -396,8 +404,7 @@ export class App implements OnInit, OnDestroy {
     // Ограничиваем значение давления в пределах нашей шкалы
     const clampedPressure = Math.max(minPressure, Math.min(pressureHpa, maxPressure));
 
-    const rotation = ((clampedPressure - minPressure) / pressureRange) * angleRange + minAngle;
-    return rotation;
+    return ((clampedPressure - minPressure) / pressureRange) * angleRange + minAngle;
   }
   ////
   /////
@@ -409,3 +416,4 @@ export class App implements OnInit, OnDestroy {
   public getPressureHint = getPressureHint;
   public getBackgroundImage = getBackgroundImage;
 }
+

@@ -1,0 +1,56 @@
+{
+  "common": {
+    "pressure_low": "Низкое",
+    "pressure_normal": "Нормальное",
+    "pressure_high": "Высокое"
+  },
+  "units": {
+    "ms": "м/с",
+    "kmh": "км/ч",
+    "mph": "миль/ч",
+    "hpa": "гПа",
+    "mmhg": "мм рт.ст."
+  },
+  "search": {
+    "placeholder": "Найти город...",
+    "hint_min_chars": "Введите как минимум 2 символа..."
+  },
+  "current": {
+    "feels_like": "Ощущается как",
+    "cloudiness": "Облачность",
+    "visibility": "Видимость",
+    "precip_prob": "Вероятность осадков",
+    "rain_3h": "Дождь (3ч)",
+    "snow_3h": "Снег (3ч)",
+    "humidity": "Влажность",
+    "wind": "Ветер",
+    "pressure": "Давление"
+  },
+  "forecast": {
+    "now": "Сейчас",
+    "extended_btn": "Прогноз на 10 дней",
+    "extended_loading": "Загрузка..."
+  },
+  "settings": {
+    "title": "Настройки",
+    "theme_label": "Тема",
+    "theme_auto": "Авто (системная)",
+    "theme_light": "Светлая",
+    "theme_dark": "Темная",
+    "temp_label": "Температура",
+    "wind_label": "Ветер",
+    "pressure_label": "Давление",
+    "language_label": "Язык",
+    "language_en": "English",
+    "language_ru": "Русский",
+    "close_btn": "Закрыть"
+  },
+  "favorites": {
+    "title": "Избранные города",
+    "empty_message": "Вы еще не добавили ни одного города в избранное."
+  },
+  "loading": {
+    "weather": "Загрузка данных о погоде...",
+    "settings": "Загрузка настроек..."
+  }
+}

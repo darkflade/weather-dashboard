@@ -3,16 +3,19 @@ import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Observable } from 'rxjs';
 import { FavoriteLocation, FavoritesService } from '../../services/favorites.service';
+import {LocalizePipe} from '../../pipes/localization.pipe';
+import {UserSettings} from '../../services/settings';
 
 @Component({
   selector: 'app-favorites-drawer',
   standalone: true,
-  imports: [CommonModule, DragDropModule],
+  imports: [CommonModule, DragDropModule, LocalizePipe],
   templateUrl: './favorites-drawer.html',
   styleUrls: ['./favorites-drawer.scss']
 })
 export class FavoritesDrawer {
   @Input() isOpen = false;
+  @Input() settings!: UserSettings;
   @Output() closeDrawer = new EventEmitter<void>();
   @Output() citySelected = new EventEmitter<FavoriteLocation>();
 

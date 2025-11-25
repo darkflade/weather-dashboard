@@ -17,7 +17,7 @@ export function getTempColor(temp: number): string {
 }
 
 export function getPressureHint(pressureHpa: number): { text: string; className: string } {
-  if (pressureHpa < 1009) return { text: 'пониженное', className: 'low' };
-  if (pressureHpa > 1022) return { text: 'повышенное', className: 'high' };
-  return { text: 'нормальное', className: 'normal' };
+  if (pressureHpa < 1009) return { text: 'common.pressure_low', className: 'low' };
+  if (pressureHpa > 1022) return { text: 'common.pressure_high', className: 'high' };
+  return { text: 'common.pressure_normal', className: 'normal' };
 }

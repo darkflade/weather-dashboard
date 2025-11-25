@@ -1,12 +1,14 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { UserSettings } from '../../services/settings';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // <-- Важно для [(ngModel)]
+
+import { FormsModule } from '@angular/forms';
+import {LocalizePipe} from '../../pipes/localization.pipe';
+import {AsyncPipe} from '@angular/common'; // <-- Важно для [(ngModel)]
 
 @Component({
   selector: 'app-settings-drawer',
   standalone: true,
-  imports: [CommonModule, FormsModule], // <-- Добавляем FormsModule
+  imports: [FormsModule, LocalizePipe, AsyncPipe], // <-- Добавляем FormsModule
   templateUrl: './settings-drawer.html',
   styleUrls: ['./settings-drawer.scss']
 })

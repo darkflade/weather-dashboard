@@ -208,6 +208,9 @@ h2 {
   position: relative;
   flex-grow: 1;
 }
+.search-hint {
+  padding: .5rem;
+}
 
 .search-box {
   height: 44px;
@@ -510,7 +513,6 @@ h2 {
   padding: 0.2em 0.6em;
   border-radius: 1em;
   font-size: 0.8em;
-  margin-left: 0.5em;
   color: #fff;
   &.low { background-color: #3b82f6; }
   &.normal { background-color: #22c55e; }
