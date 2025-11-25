@@ -20,6 +20,12 @@ export interface WeatherListItem {
   };
   visibility: number;
   pop: number;
+  rain?: {
+    "3h": number;
+  };
+  snow?: {
+    "3h": number;
+  };
   sys: {
     pod: string;
   };
@@ -61,6 +67,14 @@ export interface WeatherInfo {
 
 // Extended Daily Forecast
 
+export interface OpenWeatherResponseExtended {
+  city: City;
+  cod: string;
+  message: number;
+  cnt: number;
+  list: ExtendedWeatherListItem[];
+}
+
 export interface TemperatureDetails {
   day: number;
   min: number;
@@ -92,10 +106,3 @@ export interface ExtendedWeatherListItem {
   rain?: number;
 }
 
-export interface OpenWeatherResponseExtended {
-  city: City;
-  cod: string;
-  message: number;
-  cnt: number;
-  list: ExtendedWeatherListItem[];
-}

@@ -14,6 +14,9 @@ export function generateMockWeather(): OpenWeatherResponse {
 
   const list = Array.from({ length: 42 }).map((_, i) => {
     const temp = 10 + Math.random() * 15;
+
+    let condition:string = Math.random() > 0.66 ? "Clear" : Math.random() > 0.66 ? "Rain" : "Snow";
+
     return {
       dt: Date.now() / 1000 + i * 10800,
       main: {
@@ -24,14 +27,18 @@ export function generateMockWeather(): OpenWeatherResponse {
         pressure: 1000 + Math.random() * 20,
         sea_level: 1005,
         grnd_level: 998,
-        humidity: 40 + Math.random() * 40,
+        humidity: Math.round(40 + Math.random() * 40),
         temp_kf: 0,
       },
       weather: [
         {
           id: 800,
-          main: Math.random() > 0.5 ? "Rain" : "Clear",
-          description: Math.random() > 0.5 ? "light rain" : "clear sky",
+          main: condition,
+          description: condition == "Clear" ?
+            "clear sky":
+            condition == "Rain" ?
+              "light rain":
+              "light snow",
           icon: Math.random() > 0.7 ? "10d" : "01d",
         },
       ],
@@ -41,7 +48,14 @@ export function generateMockWeather(): OpenWeatherResponse {
         deg: Math.random() * 360,
         gust: 5 + Math.random() * 3,
       },
-      visibility: 10000,
+      visibility: 10000 * Math.random(),
+      rain: condition == "Rain"
+        ? { "3h": Math.floor(Math.random() * 300) }
+        : undefined,
+
+      snow: condition == "Snow"
+        ? { "3h": Math.floor(Math.random() * 300) }
+        : undefined,
       pop: Math.random(),
       sys: { pod: "d" },
       dt_txt: new Date(Date.now() + i * 10800000).toISOString(),

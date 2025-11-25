@@ -1,209 +1,321 @@
-@let settings = settings$ | async;
-@let weather = weatherData$ | async;
-@let search = searchResults$ | async;
+  @let settings = settings$ | async;
+  @let weather = weatherData$ | async;
+  @let search = searchResults$ | async;
 
-@if (settings) {
-  <div>
-    @if (weather) {
-      <div
-        class="background-container"
-        [style.background-image]="'url(' + getBackgroundImage(weather.list[0].weather[0].main) + ')'">
-      </div>
+  @if (settings) {
+    <div>
+      @if (weather) {
+        <div
+          class="background-container"
+          [style.background-image]="'url(' + getBackgroundImage(weather.list[0].weather[0].main) + ')'">
+        </div>
 
-      <div class="dashboard-wrapper">
-        <header>
-          <button class="drawer-btn settings-btn" (click)="isSettingsOpen = true">⚙️</button>
-          <button class="drawer-btn favorites-btn" (click)="isFavoritesOpen = true">⭐</button>
-          <div class="search-container">
-            <input
-              class="search-box"
-              placeholder="Найти город..."
-              [(ngModel)]="searchQuery"
-              (input)="onSearchInput()"
-              (focus)="onSearchFocus()"
-              (blur)="onSearchBlur()"
-              autocomplete="on">
+        <button class="drawer-btn favorites-btn" (click)="isFavoritesOpen = true">⭐</button>
+        <button class="drawer-btn settings-btn" (click)="isSettingsOpen = true">⚙️</button>
 
-            <!-- Выпадающий список с результатами -->
-            @if (search || searchHint) {
-              <div class="search-results">
-                @if (isSearchListVisible) {
-                  <ul>
-                    @if (searchHint) {
-                      <li class="search-hint">{{ searchHint }}</li>
-                    }
-                    @if (search && search.length > 0) {
-                      @for (city of search; track city) {
-                        <li (click)="selectCity(city)">
-                          {{ getDisplayName(city) }}
-                          <button class="favorite-btn" (click)="addFavorite(city, $event)">★</button>
-                        </li>
+        <div class="dashboard-wrapper">
+          <header>
+            <div class="search-container">
+              <input
+                class="search-box"
+                placeholder="Найти город..."
+                [(ngModel)]="searchQuery"
+                (input)="onSearchInput()"
+                (focus)="onSearchFocus()"
+                autocomplete="on">
+
+              <!-- Выпадающий список с результатами -->
+              @if (search || searchHint) {
+                <div class="search-results">
+                  @if (isSearchListVisible) {
+                    <ul>
+                      @if (searchHint) {
+                        <li class="search-hint">{{ searchHint }}</li>
                       }
-                    }
+                      @if (search && search.length > 0) {
+                        @for (city of search; track city) {
+                          <li (click)="selectCity(city)">
+                            {{ getDisplayName(city) }}
+                            <button class="favorite-btn" (click)="addFavorite(city, $event)">★</button>
+                          </li>
+                        }
+                      }
 
-                  </ul>
-                }
-              </div>
-            }
-
-          </div>
-        </header>
-
-        @if (weather.list && weather.list.length > 0) {
-          <main>
-            <section class="current-weather-card">
-
-              <h2>{{ weather.city.name }}, {{ weather.city.country }}</h2>
-              <div class="main-info">
-                <img [src]="'https://openweathermap.org/img/wn/' + weather.list[0].weather[0].icon + '@2x.png'"
-                     [alt]="weather.list[0].weather[0].description">
-                <div class="temperature-details">
-                <span class="temperature"
-                      [style.color]="getTempColor(weather.list[0].main.temp)">{{ weather.list[0].main.temp | temperature:settings.tempUnit | number:'1.0-0' }}
-                  °{{ settings.tempUnit }}
-                </span>
-                <span class="feels-like">
-                  Ощущается как {{ weather.list[0].main.feels_like | temperature:settings.tempUnit | number:'1.0-0' }}
-                  °{{ settings.tempUnit }}
-                </span>
-                </div>
-                <div class="min-max-container">
-                  <span class="temp-max"
-                        [style.color]="getTempColor(weather.list[0].main.temp_max)">☀️ {{ weather.list[0].main.temp_max | temperature:settings.tempUnit | number:'1.0-0' }}°{{ settings.tempUnit }}</span>
-                  <span class="temp-min"
-                        [style.color]="getTempColor(weather.list[0].main.temp_min)">🌑️ {{ weather.list[0].main.temp_min | temperature:settings.tempUnit | number:'1.0-0' }}°{{ settings.tempUnit }}</span>
-                </div>
-              </div>
-
-              <p class="condition-text">{{ weather.list[0].weather[0].description }}</p>
-
-              <div class="details">
-                <div class="humidity-details element-details">
-                  Влажность: {{ weather.list[0].main.humidity }}%
-                </div>
-                <div class="wind-details element-details">
-                  Ветер:
-                  {{ weather.list[0].wind.speed | wind:settings.windUnit | number:'1.0-1' }} {{ settings.windUnit === 'ms' ? 'м/с' : settings.windUnit === 'kmh' ? 'км/ч' : 'миль/ч' }}
-                  <div class="wind-direction" [style.transform]="'rotate(' + weather.list[0].wind.deg + 'deg)'">↑</div>
-                </div>
-                <div class="pressure-details element-details">
-              <span>
-                Давление:
-                {{ weather.list[0].main.pressure | pressure:settings.pressureUnit | number:'1.0-0' }}
-                {{ settings.pressureUnit === 'hPa' ? 'гПа' : 'мм рт.ст.' }}
-              </span>
-                  <span class="pressure-hint" [ngClass]="getPressureHint(weather.list[0].main.pressure).className">
-                  {{ getPressureHint(weather.list[0].main.pressure).text }}
-              </span>
-                </div>
-              </div>
-
-              <div class="chart-container">
-                <canvas #forecastChart></canvas>
-              </div>
-            </section>
-
-            <section class="forecast-daily">
-
-              @if (todayForecast) {
-                <div
-                  class="day-card today"
-                  [class.selected]="selectedDayForecast?.date?.toDateString() === todayForecast.date.toDateString()"
-                  (click)="selectDay(todayForecast)">
-
-                  <div class="day-name">Сейчас</div> <!-- Жестко заданное имя -->
-                  <img [src]="'https://openweathermap.org/img/wn/' + todayForecast.icon + '@2x.png'" [alt]="'Погода на 24 часа'">
-                  <div class="day-temp">
-                    <span class="temp-max">{{ todayForecast.temp_max | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
-                    <span class="temp-min">{{ todayForecast.temp_min | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
-                  </div>
+                    </ul>
+                  }
                 </div>
               }
 
-              @for (day of weather.list | dailyForecast; track day.date) {
-                <div
-                  class="day-card"
-                  [class.selected]="day.date.toDateString() === selectedDayForecast?.date?.toDateString()"
-                  (click)="selectDay(day)">
+            </div>
+          </header>
 
-                  <div class="day-name">{{ day.date | date:'EEEE' }}</div>
-                  <img [src]="'https://openweathermap.org/img/wn/' + day.icon + '@2x.png'" [alt]="'Погода на ' + (day.date | date)">
-                  <div class="day-temp">
-                    <span class="temp-max">{{ day.temp_max | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
-                    <span class="temp-min">{{ day.temp_min | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
-                  </div>
+          @if (weather.list && weather.list.length > 0) {
+            <main>
+              <section class="current-weather-card">
 
-                </div>
-              }
+                @let currentCity = currentCity$ | async;
+                <h2>{{ currentCity ? getDisplayName(currentCity) : weather.city.name }}</h2>
+                <div class="main-info">
+                    <div class="main-info-left">
+                      <img [src]="'https://openweathermap.org/img/wn/' + weather.list[0].weather[0].icon + '@2x.png'"
+                           [alt]="weather.list[0].weather[0].description">
+                      <div class="temperature-details">
+                        <span class="temperature"
+                              [style.color]="getTempColor(weather.list[0].main.temp)">{{ weather.list[0].main.temp | temperature:settings.tempUnit | number:'1.0-0' }} °{{ settings.tempUnit }}
+                        </span>
+                        <span class="feels-like">
+                          Ощущается как {{ weather.list[0].main.feels_like | temperature:settings.tempUnit | number:'1.0-0' }}
+                          °{{ settings.tempUnit }}
+                        </span>
+                      </div>
+                    </div>
+                  <div class="main-info-right">
+                    <div class="info-item">
+                      <span class="info-label">Облачнение</span>
+                      <span class="info-value">{{ weather.list[0].clouds.all }}%</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Видимость</span>
+                      <span class="info-value">{{ weather.list[0].visibility / 1000 | number:'1.0-1' }} км</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Вероятность осадков</span>
+                      <span class="info-value">{{ weather.list[0].pop * 100 | number:'1.0-0' }}%</span>
+                    </div>
 
-              <!--
-                Extended Forecast
-                Extended Forecast NOT Set
-              -->
-              @if (!isExtendedForecastVisible) {
-                <div class="show-more-container">
-                  <button class="show-more-btn" (click)="loadExtendedForecast()">
-                    Прогноз на 10 дней
-                  </button>
-                </div>
-              }
-
-              <!--
-                Extended Forecast IS Set
-              -->
-              @if (isExtendedForecastVisible) {
-                  @if (isExtendedLoading) {
-                    <div class="loader-small">Загрузка...</div>
-                  } @else {
-                    @for (day of extendedForecast; track day.dt) {
-                      <div class="day-card reduced-card">
-                        <div class="day-name">{{ day.dt * 1000 | date:'EEEE' }}</div>
-                        <img [src]="'https://openweathermap.org/img/wn/' + day.weather[0].icon + '@2x.png'" [alt]="day.weather[0].description">
-                        <div class="day-temp">
-                          <span class="temp-max">{{ day.temp.max | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
-                          <span class="temp-min">{{ day.temp.min | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
-                        </div>
+                    @if (weather.list[0].rain != null) {
+                      <div class="info-item">
+                        <span class="info-label">Дождь (3ч)</span>
+                        <span class="info-value">{{ weather.list[0].rain?.["3h"] ?? 0 }} мм</span>
                       </div>
                     }
-                  }
-              }
 
-            </section>
-          </main>
-        }
+                    @if (weather.list[0].snow != null) {
+                      <div class="info-item">
+                        <span class="info-label">Снег (3ч)</span>
+                        <span class="info-value">{{ weather.list[0].snow?.["3h"] ?? 0 }} мм</span>
+                      </div>
+                    }
+                  </div>
+                  <!-- Эту херню не добавляем
+                  <div class="min-max-container">
+                    <span class="temp-max"
+                          [style.color]="getTempColor(weather.list[0].main.temp_max)">☀️ {{ weather.list[0].main.temp_max | temperature:settings.tempUnit | number:'1.0-0' }}°{{ settings.tempUnit }}</span>
+                    <span class="temp-min"
+                          [style.color]="getTempColor(weather.list[0].main.temp_min)">🌑️ {{ weather.list[0].main.temp_min | temperature:settings.tempUnit | number:'1.0-0' }}°{{ settings.tempUnit }}</span>
+                  </div>
+                  <span>
+                    Облачнение
+                    {{ weather.list[0].clouds.all }}
+                  </span>
+                  <span>
+                    Видимость
+                    {{ weather.list[0].visibility }}
+                    м
+                  </span>
+                  <span>
+                    Вероятность осадков
+                    {{ weather.list[0].pop }}
+                  </span>
+                  <span>
+                    Выпавших осадков за 3 часа
+                    {{ weather.list[0].rain?.["3h"] ?? 0 }}
+                    мм
+                  </span>
+                  <span>
+                    Выпавших снегров за 3 часа
+                    {{ weather.list[0].snow?.["3h"] ?? 0 }}
+                    мм
+                  </span>
+                  -->
+                </div>
 
-      </div>
-    } @else {
-      <div class="loading">
-        Fetching Weather Data
-      </div>
-      <ng-container *ngTemplateOutlet="loading"></ng-container>
-    }
+                <p class="condition-text">{{ weather.list[0].weather[0].description }}</p>
 
-    <ng-template #loading>
-      <div class="loader">
-        Загрузка данных о погоде...
-      </div>
-    </ng-template>
+                <div class="details">
+
+                  <div class="weather-widget">
+                    <div class="humidity-widget">
+                      <svg class="humidity-drop" viewBox="0 0 384 512" width="256" height="341">
+                        <defs>
+                          <clipPath id="dropClip">
+                            <path d="M192 512C86 512 0 426 0 320C0 228.8 130.2 57.4 163 13.1C172.5 1.9 181.7 0 192 0s19.5 1.9 29 13.1C253.8 57.4 384 228.8 384 320c0 106-86 192-192 192z"/>
+                          </clipPath>
+                        </defs>
+                        <path class="path-bg" d="M192 512C86 512 0 426 0 320C0 228.8 130.2 57.4 163 13.1C172.5 1.9 181.7 0 192 0s19.5 1.9 29 13.1C253.8 57.4 384 228.8 384 320c0 106-86 192-192 192z"/>
+
+                        <rect class="water-fill" clip-path="url(#dropClip)" width="384" height="512" y="0"
+                              [attr.y]="512 - (512 * weather.list[0].main.humidity / 100)"></rect>
+                      </svg>
 
 
-  </div>
-    <app-settings-drawer
-      [isOpen]="isSettingsOpen"
-      [settings]="settings"
-      (closeDrawer)="isSettingsOpen = false"
-      (settingsChange)="onSettingsChange($event)">
-    </app-settings-drawer>
 
-    <app-favorites-drawer
-      [isOpen]="isFavoritesOpen"
-      (closeDrawer)="isFavoritesOpen = false"
-      (citySelected)="selectCity($event)">
-    </app-favorites-drawer>
-} @else {
-  <div class="loading">
-    Settings Loading
-  </div>
-}
+                    </div>
+                    <span class="widget-label">{{ weather.list[0].main.humidity }}%</span>
+                    <span class="widget-title">Влажность</span>
+                  </div>
 
-<router-outlet></router-outlet>
+                  <div class="weather-widget">
+                    <div class="wind-widget">
+                      <div class="wind-vane" [style.--deg]="weather.list[0].wind.deg + 'deg'">
+                        <div class="wind-arrow" [style.width.px]="calculateWindArrowLength(weather.list[0].wind.speed)"></div>
+                      </div>
+                    </div>
+                    <span class="widget-label">
+                        {{ weather.list[0].wind.speed | wind:settings.windUnit | number:'1.0-1' }} {{ settings.windUnit === 'ms' ? 'м/с' : settings.windUnit === 'kmh' ? 'км/ч' : 'миль/ч' }}
+                      </span>
+                    <span class="widget-title">Ветер</span>
+                  </div>
+
+                    <div class="weather-widget">
+                      <div class="pressure-widget">
+                        <div class="pressure-gauge">
+                          <div class="gauge-needle" [style.transform]="'rotate(' + calculatePressureRotation(weather.list[0].main.pressure) + 'deg)'"></div>
+                          <div class="gauge-center"></div>
+                        </div>
+                      </div>
+
+                    <span class="widget-label">
+                        {{ weather.list[0].main.pressure | pressure:settings.pressureUnit | number:'1.0-0' }} {{ settings.pressureUnit === 'hPa' ? 'гПа' : 'мм рт.ст.' }}
+                    </span>
+                    <div class = "pressure-stack">
+                      <span class="pressure-hint" [ngClass]="getPressureHint(weather.list[0].main.pressure).className">
+                        {{ getPressureHint(weather.list[0].main.pressure).text }}
+                      </span>
+                      <span class="widget-title">Давление</span>
+                    </div>
+                  </div>
+
+
+                  <!--
+                  <div class="humidity-details element-details">
+                    Влажность: {{ weather.list[0].main.humidity }}%
+                  </div>
+
+                  <div class="wind-details element-details">
+                    Ветер:
+                    {{ weather.list[0].wind.speed | wind:settings.windUnit | number:'1.0-1' }} {{ settings.windUnit === 'ms' ? 'м/с' : settings.windUnit === 'kmh' ? 'км/ч' : 'миль/ч' }}
+                    <div class="wind-direction" [style.transform]="'rotate(' + weather.list[0].wind.deg + 'deg)'">↑</div>
+                  </div>
+                  <div class="pressure-details element-details">
+                <span>
+                  Давление:
+                  {{ weather.list[0].main.pressure | pressure:settings.pressureUnit | number:'1.0-0' }}
+                  {{ settings.pressureUnit === 'hPa' ? 'гПа' : 'мм рт.ст.' }}
+                </span>
+                    <span class="pressure-hint" [ngClass]="getPressureHint(weather.list[0].main.pressure).className">
+                    {{ getPressureHint(weather.list[0].main.pressure).text }}
+                </span>
+                  </div>
+                  -->
+                </div>
+
+                <div class="chart-container">
+                  <canvas #forecastChart></canvas>
+                </div>
+              </section>
+
+              <section class="forecast-daily">
+
+                @if (todayForecast) {
+                  <div
+                    class="day-card today"
+                    [class.selected]="selectedDayForecast?.date?.toDateString() === todayForecast.date.toDateString()"
+                    (click)="selectDay(todayForecast)">
+
+                    <div class="day-name">Сейчас</div> <!-- Жестко заданное имя -->
+                    <img [src]="'https://openweathermap.org/img/wn/' + todayForecast.icon + '@2x.png'" [alt]="'Погода на 24 часа'">
+                    <div class="day-temp">
+                      <span class="temp-max">{{ todayForecast.temp_max | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                      <span class="temp-min">{{ todayForecast.temp_min | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                    </div>
+                  </div>
+                }
+
+                @for (day of weather.list | dailyForecast; track day.date) {
+                  <div
+                    class="day-card"
+                    [class.selected]="day.date.toDateString() === selectedDayForecast?.date?.toDateString()"
+                    (click)="selectDay(day)">
+
+                    <div class="day-name">{{ day.date | date:'EEEE' }}</div>
+                    <img [src]="'https://openweathermap.org/img/wn/' + day.icon + '@2x.png'" [alt]="'Погода на ' + (day.date | date)">
+                    <div class="day-temp">
+                      <span class="temp-max">{{ day.temp_max | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                      <span class="temp-min">{{ day.temp_min | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                    </div>
+
+                  </div>
+                }
+
+                <!--
+                  Extended Forecast
+                  Extended Forecast NOT Set
+                -->
+                @if (!isExtendedForecastVisible) {
+                  <div class="show-more-container">
+                    <button class="show-more-btn" (click)="loadExtendedForecast()">
+                      Прогноз на 10 дней
+                    </button>
+                  </div>
+                }
+
+                <!--
+                  Extended Forecast IS Set
+                -->
+                @if (isExtendedForecastVisible) {
+                    @if (isExtendedLoading) {
+                      <div class="loader-small">Загрузка...</div>
+                    } @else {
+                      @for (day of extendedForecast; track day.dt) {
+                        <div class="day-card reduced-card">
+                          <div class="day-name">{{ day.dt * 1000 | date:'EEEE' }}</div>
+                          <img [src]="'https://openweathermap.org/img/wn/' + day.weather[0].icon + '@2x.png'" [alt]="day.weather[0].description">
+                          <div class="day-temp">
+                            <span class="temp-max">{{ day.temp.max | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                            <span class="temp-min">{{ day.temp.min | temperature:settings.tempUnit | number:'1.0-0' }}°</span>
+                          </div>
+                        </div>
+                      }
+                    }
+                }
+
+              </section>
+            </main>
+          }
+
+        </div>
+      } @else {
+        <div class="loading">
+          Fetching Weather Data
+        </div>
+        <ng-container *ngTemplateOutlet="loading"></ng-container>
+      }
+
+      <ng-template #loading>
+        <div class="loader">
+          Загрузка данных о погоде...
+        </div>
+      </ng-template>
+
+
+    </div>
+      <app-settings-drawer
+        [isOpen]="isSettingsOpen"
+        [settings]="settings"
+        (closeDrawer)="isSettingsOpen = false"
+        (settingsChange)="onSettingsChange($event)">
+      </app-settings-drawer>
+
+      <app-favorites-drawer
+        [isOpen]="isFavoritesOpen"
+        (closeDrawer)="isFavoritesOpen = false"
+        (citySelected)="selectCity($event)">
+      </app-favorites-drawer>
+  } @else {
+    <div class="loading">
+      Settings Loading
+    </div>
+  }
+
+  <router-outlet></router-outlet>

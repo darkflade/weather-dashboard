@@ -7,7 +7,8 @@ import {
   OnDestroy,
   ViewChild,
   ElementRef,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  HostListener,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
@@ -45,6 +46,10 @@ import { getBackgroundImage } from './utils/background.utils';
   // Components
 import { SettingsDrawerComponent } from './components/settings-drawer/settings-drawer';
 import { FavoritesDrawer } from './components/favorites-drawer/favorites-drawer';
+
+// Localization
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -81,6 +86,7 @@ export class App implements OnInit, OnDestroy {
   currentWeather$!: Observable<OpenWeatherResponse>;
   public settings$: Observable<UserSettings>;
   private city$ = new BehaviorSubject<SearchLocation | null>(null)
+  public readonly currentCity$ = this.city$.asObservable();
   ////////////////////////////////////////
 
 
@@ -110,6 +116,13 @@ export class App implements OnInit, OnDestroy {
   public searchResults$: Observable<SearchLocation[]>;
   public isSearchListVisible: boolean = false;
   public searchHint: string | null = null;
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.querySelector('.search-container').contains(event.target)) {
+      this.isSearchListVisible = false;
+    }
+  }
   ////////////////////////////////////////
 
 
@@ -139,6 +152,7 @@ export class App implements OnInit, OnDestroy {
     private favoritesService: FavoritesService,
     private searchService: SearchService,
     private cdr: ChangeDetectorRef,
+    private elementRef: ElementRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -280,18 +294,24 @@ export class App implements OnInit, OnDestroy {
 
   getDisplayName(city: SearchLocation): string {
     const currentLang = this.settingsService.getCurrentSettings().language;
-    return `${currentLang === 'ru' ? city.city_ru : city.city_en}, ${city.country_ru}`;
+
+    let city_name: string;
+    let country_name: string;
+
+
+    if  (currentLang === 'ru') {
+      city_name = city.city_ru;
+      country_name = city.country_ru;
+    } else {
+      city_name = city.city_en;
+      country_name = city.country;
+    }
+
+    return `${city_name}, ${country_name}`;
   }
 
-  /** Управляем видимостью списка */
   onSearchFocus(): void {
     this.isSearchListVisible = true;
-  }
-
-  onSearchBlur(): void {
-    setTimeout(() => {
-      this.isSearchListVisible = false;
-    }, 200);
   }
 
   private renderChart(): void {
@@ -338,11 +358,54 @@ export class App implements OnInit, OnDestroy {
     this.favoritesService.addFavorite(location);
   }
 
+
+  ////
+  /////
+  ///// ОТДЕЛИТЬЬ!!!!!
+  /**
+   * Рассчитывает длину стрелки флюгера в зависимости от скорости ветра.
+   * @param speed - Скорость ветра в м/с.
+   * @returns Длина в пикселях.
+   */
+  public calculateWindArrowLength(speed: number): number {
+    const minLength = 20;
+    const maxLength = 100;
+    const maxSpeed = 20; // Максимальная скорость ветра для расчета (все что выше будет maxLength)
+    const length = minLength + (speed / maxSpeed) * (maxLength - minLength);
+    return Math.min(length, maxLength); // Ограничиваем максимальную длину
+  }
+
+  ////
+  /////
+  ///// ОТДЕЛИТЬЬ!!!!!
+
+  /**
+   * Рассчитывает угол поворота стрелки манометра.
+   * @param pressureHpa - Давление в гПа.
+   * @returns Угол в градусах.
+   */
+  public calculatePressureRotation(pressureHpa: number): number {
+    const minPressure = 960;  // Минимальное давление для шкалы
+    const maxPressure = 1060; // Максимальное давление для шкалы
+    const minAngle = -80;     // Угол для минимального давления
+    const maxAngle = 80;      // Угол для максимального давления
+
+    const pressureRange = maxPressure - minPressure;
+    const angleRange = maxAngle - minAngle;
+
+    // Ограничиваем значение давления в пределах нашей шкалы
+    const clampedPressure = Math.max(minPressure, Math.min(pressureHpa, maxPressure));
+
+    const rotation = ((clampedPressure - minPressure) / pressureRange) * angleRange + minAngle;
+    return rotation;
+  }
+  ////
+  /////
+  ///// ОТДЕЛИТЬЬ!!!!!
+
   // EXPORTED
   // Function for html template
   public getTempColor = getTempColor;
   public getPressureHint = getPressureHint;
   public getBackgroundImage = getBackgroundImage;
-
-  //protected readonly location = location;
 }

@@ -47,7 +47,6 @@ struct CityRecord {
     population: u32,
 }
 
-
 #[get("/api/forecast")]
 async fn forecast(query: web::Query<std::collections::HashMap<String, String>>) -> HttpResponse {
     let lat = match query.get("lat") {

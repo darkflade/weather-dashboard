@@ -37,6 +37,8 @@
           },
           "configurations": {
             "production": {
+              "outputPath": "dist/weather-dashboard",
+              "index": "src/app.html",
               "budgets": [
                 {
                   "type": "initial",
@@ -45,8 +47,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "12kB",
+                  "maximumError": "15kB"
                 }
               ],
               "outputHashing": "all"
